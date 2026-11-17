@@ -596,8 +596,8 @@ function nextTargets() {
   if (type === 'donati') pts = [ptAt(p0.B.q.t, sB, 0.14), ptAt(p0.A.q.t, sA, 0.14)];
   else if (type === 'horiz') pts = [ptAt(p0.B.q.t + dt, sB, p0.B.edge), ptAt(p0.A.q.t + dt, sA, p0.A.edge)];
   else if (type === 'x') pts = [ptAt(p0.A.q.t + dt, sA, bite), ptAt(p0.B.q.t + dt, sB, bite)];
-  else if (type === 'surjet') { const tn = last.A.q.t + dt * dir; if (tn < 0.05 || tn > 0.95) { if (!N.auto) toast('Bout de la plaie atteint : touchez 🪢 Nouer et terminer.', ''); return; } pts = [ptAt(tn, sA, bite), ptAt(last.B.q.t + dt * dir, sB, bite)]; }
-  else if (type === 'intra') { const s2 = -(Math.sign(last.A.q.s) || 1), dr = Math.sign(last.B.q.t - last.A.q.t) || 1, t0 = last.B.q.t - 0.1 / W.L * dr; const tn = t0 + 0.45 / W.L * dr; if (tn < 0.03 || tn > 0.97) { if (!N.auto) toast('Bout de la plaie atteint : touchez 🪢 Tendre et terminer.', ''); return; } pts = [ptAt(t0, s2, 0.02), ptAt(tn, s2, 0.02)]; }
+  else if (type === 'surjet') { const tn = last.A.q.t + dt * dir; if (tn < 0.05 || tn > 0.95) { if (!N.auto) toast('Bout de la plaie atteint : touchez ➰ Nouer et terminer.', ''); return; } pts = [ptAt(tn, sA, bite), ptAt(last.B.q.t + dt * dir, sB, bite)]; }
+  else if (type === 'intra') { const s2 = -(Math.sign(last.A.q.s) || 1), dr = Math.sign(last.B.q.t - last.A.q.t) || 1, t0 = last.B.q.t - 0.1 / W.L * dr; const tn = t0 + 0.45 / W.L * dr; if (tn < 0.03 || tn > 0.97) { if (!N.auto) toast('Bout de la plaie atteint : touchez ➰ Tendre et terminer.', ''); return; } pts = [ptAt(t0, s2, 0.02), ptAt(tn, s2, 0.02)]; }
   nextG = new THREE.Group(); padGroup.add(nextG);
   pts.forEach((p, k) => { const r = new THREE.Mesh(new THREE.RingGeometry(0.09, 0.15, 26).rotateX(-PI / 2), new THREE.MeshBasicMaterial({ color: k ? 0x6cc4ff : 0xffd34d, transparent: true, opacity: 1, depthTest: false })); r.renderOrder = 7; r.position.copy(p.P0).setY(0.03); r.userData.t = -1; r.userData.nk = k; nextG.add(r); });
 }
@@ -842,7 +842,7 @@ function commitPass() {
   N.ph = 'idle'; if (st.anch) applyClosure();
   nextTargets(); nIdleCap(); if (!N.auto) sutureStep();
 }
-const MULTI_MSG = { hemo: '2e passage : repartez du même côté, de l\'autre côté du vaisseau. Les deux passages encadrent le vaisseau et font un X.', buried: '', donati: '2e passage « près-près » : repiquez du côté de la sortie, à 1–2 mm du bord, et revenez.', horiz: '2e passage : repiquez du côté de la sortie, 4–8 mm plus loin, et revenez.', x: '2e passage : repartez du même côté que le premier, 4–8 mm plus loin.', surjet: 'Passage suivant : même côté de départ, 4–10 mm plus loin. Puis 🪢 Nouer quand la plaie est couverte.', intra: 'Passage suivant : de l\'autre côté, dans la berge, le long de la plaie. Puis 🪢 Tendre à la fin.' };
+const MULTI_MSG = { hemo: '2e passage : repartez du même côté, de l\'autre côté du vaisseau. Les deux passages encadrent le vaisseau et font un X.', buried: '', donati: '2e passage « près-près » : repiquez du côté de la sortie, à 1–2 mm du bord, et revenez.', horiz: '2e passage : repiquez du côté de la sortie, 4–8 mm plus loin, et revenez.', x: '2e passage : repartez du même côté que le premier, 4–8 mm plus loin.', surjet: 'Passage suivant : même côté de départ, 4–10 mm plus loin. Puis ➰ Nouer quand la plaie est couverte.', intra: 'Passage suivant : de l\'autre côté, dans la berge, le long de la plaie. Puis ➰ Tendre à la fin.' };
 function nIdleCap() {
   const st = N.st, g2 = S.L.guides === 2;
   if (st && st.passes.length) return nCap((g2 ? '🟡 entrée → 🔵 sortie. ' : '') + MULTI_MSG[st.type], 'Passage suivant');
@@ -1475,7 +1475,7 @@ const COACH = {
   prep: ['Préparation', 'Avant de suturer : asepsie, examen, anesthésie, lavage, antiseptique, séchage, champ stérile. En Débutant, touchez ▶ Regarder ; sinon touchez les gestes <b>dans le bon ordre</b> (attention aux pièges).'],
   choose: ['Matériel', 'Touchez une <b>aiguille</b> ou un <b>sachet de fil</b> sur le plateau, ou utilisez la liste. Le choix dépend de la zone : visage = fil fin, cuir chevelu = agrafes, tension = Donati.'],
   suture: ['Un point en 4 gestes', '<b>① Passer</b> : posez le doigt à l\'entrée et glissez vers l\'autre côté, l\'aiguille suit. Relâchez quand la pointe ressort.<br><b>② Tirer le fil</b> : touchez la pointe (cercle jaune) et tirez, en gardant un brin court de 2 à 4 cm.<br><b>③ Nouer</b> : glissez par-dessus la plaie. Plus vous allez loin, plus ça serre.<br><b>④ Couper</b> : touchez les fils à 5–10 mm du nœud.<br><small>Pendant la suture, la vue se tourne et se zoome avec <b>deux doigts</b>.</small>'],
-  multi: ['Point à plusieurs passages', 'Chaque passage se fait comme un point simple : <b>glisser</b> pour passer l\'aiguille, puis <b>toucher la pointe et tirer</b> le fil. Suivez les ronds : 🟡 entrée, 🔵 sortie. Le nœud (glisser par-dessus la plaie) et la coupe viennent à la fin. Pour les surjets, touchez 🪢 <b>Nouer et terminer</b> quand la plaie est couverte.<br><small>La vue se tourne avec <b>deux doigts</b>.</small>'],
+  multi: ['Point à plusieurs passages', 'Chaque passage se fait comme un point simple : <b>glisser</b> pour passer l\'aiguille, puis <b>toucher la pointe et tirer</b> le fil. Suivez les ronds : 🟡 entrée, 🔵 sortie. Le nœud (glisser par-dessus la plaie) et la coupe viennent à la fin. Pour les surjets, touchez ➰ <b>Nouer et terminer</b> quand la plaie est couverte.<br><small>La vue se tourne avec <b>deux doigts</b>.</small>'],
   dress: ['Pansement', 'Touchez un pansement sur le champ ou dans la liste, puis « Poser ». Plaie suturée sèche → pansement sec stérile.'],
   care: ['Soins de plaies', 'Regardez la plaie (couleur, exsudat, rougeur), répondez à la question, puis suivez la conduite à tenir. Certains gestes se font en touchant la plaie.'],
   urg: ['Urgence', 'Chaque seconde compte : le pouls et la tension évoluent en direct. Se protéger, comprimer, alerter, allonger. Le garrot en dernier recours.'],
@@ -1574,7 +1574,7 @@ function home() {
   $('pupu').textContent = '🐚 ' + save.pupu; $('lvlchip').textContent = '';
   const lv = $('levels'); lv.innerHTML = '';
   const modes = document.createElement('div'); modes.className = 'row'; modes.style.marginBottom = '8px';
-  for (const [k, l] of [['learn', '🎓 Apprendre'], ['suture', '🪡 Suture'], ['care', '🩹 Soins'], ['urg', '🚨 Urgence'], ['sb', '🧪 Bac à sable']]) { const b = document.createElement('button'); b.textContent = l; if (k === homeMode) b.className = 'sel';
+  for (const [k, l] of [['learn', '🎓 Apprendre'], ['suture', '🧵 Suture'], ['care', '🩹 Soins'], ['urg', '🚨 Urgence'], ['sb', '🧪 Bac à sable']]) { const b = document.createElement('button'); b.textContent = l; if (k === homeMode) b.className = 'sel';
     if (D.DEMO && k === 'sb') { b.className = 'off'; b.textContent = '🔒 ' + l.slice(3); b.onclick = demoLock; } else b.onclick = () => { homeMode = k; home(); }; modes.appendChild(b); }
   lv.appendChild(modes);
   if (D.DEMO) { const bn = document.createElement('div'); bn.className = 'info'; bn.style.margin = '0 0 8px'; bn.innerHTML = '🧪 <b>Version de démonstration</b> : les exercices en gris 🔒 sont dans la version complète (7 sutures, 16 soins, 3 urgences, 12 leçons, bac à sable, photo → 3D, niveaux Avancé et Examen).'; lv.appendChild(bn); }
@@ -1586,7 +1586,7 @@ function home() {
   if (homeMode === 'sb') return sbForm(wg);
   if (homeMode === 'learn') {
     row.style.display = 'none';
-    const L = [['couches', '🧬 Les couches de la peau', 'Épiderme, derme, graisse, aponévrose, muscle'], ['atelier', '🪢 Atelier nœud', 'Seulement le nœud, à répéter : l\'aiguille passe pour vous'], ['noeud', '🪢 Le nœud à la pince', 'Enrouler, saisir le bout court, tirer à plat ; 3 jetés'], ['anesth', '💉 Anesthésie locale', 'Pas à pas : dose, matériel, où piquer, surveiller'], ...Object.keys(D.POINTS).map((k) => [k, '🪡 ' + D.POINTS[k], 'Fiche + démonstration + à vous'])];
+    const L = [['couches', '🧬 Les couches de la peau', 'Épiderme, derme, graisse, aponévrose, muscle'], ['atelier', '➰ Atelier nœud', 'Seulement le nœud, à répéter : l\'aiguille passe pour vous'], ['noeud', '➰ Le nœud à la pince', 'Enrouler, saisir le bout court, tirer à plat ; 3 jetés'], ['anesth', '💉 Anesthésie locale', 'Pas à pas : dose, matériel, où piquer, surveiller'], ...Object.keys(D.POINTS).map((k) => [k, '🧵 ' + D.POINTS[k], 'Fiche + démonstration + à vous'])];
     for (const [k, n, d] of L) { const c = document.createElement('button'); const off = D.DEMO && !D.DEMO_KEEP.learn.includes(k); c.className = 'card' + (off ? ' off' : ''); const done = (save.learn || {})[k]; c.innerHTML = `<b>${n}</b><small>${d}</small><span class="st">${off ? '🔒 Version complète' : done ? '✓ faite' : ''}</span>`; c.onclick = off ? demoLock : () => startLesson(k); wg.appendChild(c); }
     return;
   }
@@ -1614,14 +1614,14 @@ const fold = (t) => String(t).toLowerCase().replace(/œ/g, 'oe').replace(/æ/g, 
 function popInfo(t, b) { $('ctitle').innerHTML = t; $('cbody').innerHTML = b; $('coach').classList.remove('hide'); $('cok').onclick = () => $('coach').classList.add('hide'); $('coff').onclick = $('cok').onclick; }
 function searchIndex() {
   const I = [], lv = () => homeLevel === 'exam' ? 'int' : homeLevel;
-  for (const k of D.SUTURE_ORDER) { const w = D.SUTURE[k]; I.push(['🪡 Suture', `${w.icon} ${w.name} · ${w.zone}`, w.desc, () => start('suture', k, lv())]); }
+  for (const k of D.SUTURE_ORDER) { const w = D.SUTURE[k]; I.push(['🧵 Suture', `${w.icon} ${w.name} · ${w.zone}`, w.desc, () => start('suture', k, lv())]); }
   for (const k of D.CARE_ORDER) { const w = D.CARE[k]; I.push(['🩹 Soins', `${w.icon} ${w.name} · ${w.zone}`, w.desc, () => start('care', k, lv())]); }
   for (const k in D.URGENCE) { const w = D.URGENCE[k]; I.push(['🚨 Urgence', `${w.icon} ${w.name}`, w.desc, () => start('urg', k, lv())]); }
   I.push(['🎓 Apprendre', '🧬 Les couches de la peau', 'épiderme derme hypoderme graisse aponévrose muscle', () => startLesson('couches')]);
-  I.push(['🎓 Apprendre', '🪢 Atelier nœud', 'atelier noeud nœud entraînement répéter', () => startLesson('atelier')]);
-  I.push(['🎓 Apprendre', '🪢 Le nœud à la pince', 'noeud nœud jeté enrouler porte-aiguille chirurgien serrer couper', () => startLesson('noeud')]);
+  I.push(['🎓 Apprendre', '➰ Atelier nœud', 'atelier noeud nœud entraînement répéter', () => startLesson('atelier')]);
+  I.push(['🎓 Apprendre', '➰ Le nœud à la pince', 'noeud nœud jeté enrouler porte-aiguille chirurgien serrer couper', () => startLesson('noeud')]);
   I.push(['🎓 Apprendre', '💉 Anesthésie locale', 'lidocaïne dose injection où piquer spray', () => startLesson('anesth')]);
-  for (const k in D.POINTS) I.push(['🎓 Point', '🪡 ' + D.POINTS[k], D.POINT_INFO[k] + ' ' + Object.values(D.FICHES[k] || {}).flat().join(' '), () => startLesson(k)]);
+  for (const k in D.POINTS) I.push(['🎓 Point', '🧵 ' + D.POINTS[k], D.POINT_INFO[k] + ' ' + Object.values(D.FICHES[k] || {}).flat().join(' '), () => startLesson(k)]);
   TUTO.forEach(([t, b], i) => I.push(['📖 Tutoriel', t, b, () => tuto(i)]));
   for (const k in D.DRESSINGS) { const x = D.DRESSINGS[k]; I.push(['🩹 Pansement', x.name, x.note || '', () => popInfo('🩹 ' + x.name, x.note || '')]); }
   for (const k in D.PRODUCTS) { const x = D.PRODUCTS[k]; I.push(['🧴 Produit', x.name, x.note || '', () => popInfo('🧴 ' + x.name, x.note || '')]); }
@@ -1797,7 +1797,7 @@ function choose(force) {
     const isFil = D.CLOSE[S.choices.close].kind === 'fil';
     setView(new THREE.Vector3(13.4, -1.5, 0), 12.5, 0.42, 0); highlightNeedle();
     panel('Matériel conseillé', `Pour une ${w.name.toLowerCase()} (${w.zone.toLowerCase()}) :`,
-      `<div class="info" style="font-size:15px">🧵 ${D.CLOSE[S.choices.close].name}${isFil ? `<br>🪡 ${D.NEEDLES[S.choices.needle].name}<br>📏 Fil ${S.choices.fil} · ${D.POINTS[S.choices.point]}<br><small>${D.POINT_INFO[S.choices.point]}</small>` : ''}<br><small>${D.CLOSE[S.choices.close].note}</small></div>`,
+      `<div class="info" style="font-size:15px">🧵 ${D.CLOSE[S.choices.close].name}${isFil ? `<br>🧵 ${D.NEEDLES[S.choices.needle].name}<br>📏 Fil ${S.choices.fil} · ${D.POINTS[S.choices.point]}<br><small>${D.POINT_INFO[S.choices.point]}</small>` : ''}<br><small>${D.CLOSE[S.choices.close].note}</small></div>`,
       [['Commencer', () => sutureStart(), 'main'], ['Changer', () => choose(true)]]);
     return;
   }
@@ -1849,8 +1849,8 @@ function sutureStep() {
   if (S.mode === 'learn' && S.lessonKey === 'atelier') return atelierStep();
   if (S.mode === 'learn') { // leçon : le panneau reste celui de la leçon
     const c = S.lesson[S.li], st = N.st, old = $('knotL'); if (old) old.remove(); const oh = $('helpL'); if (oh) oh.remove();
-    if (c.act === 'point' && !N.auto && (N.ph === 'knot' || N.ph === 'cut')) { $('pact').insertAdjacentHTML('afterbegin', `<button id="helpL" class="main">${N.ph === 'knot' ? '🪢 Nouer pour moi' : '✂️ Couper'}</button>`); $('helpL').onclick = rescue; }
-    if (c.act === 'point' && st && !NEED[st.type] && N.ph === 'idle' && st.passes.length) { $('pact').insertAdjacentHTML('afterbegin', `<button id="knotL" class="main">🪢 ${st.type === 'intra' ? 'Tendre' : 'Nouer'} et terminer</button>`); $('knotL').onclick = () => knotStart(st.type === 'intra' ? 'tend' : 'final'); }
+    if (c.act === 'point' && !N.auto && (N.ph === 'knot' || N.ph === 'cut')) { $('pact').insertAdjacentHTML('afterbegin', `<button id="helpL" class="main">${N.ph === 'knot' ? '➰ Nouer pour moi' : '✂️ Couper'}</button>`); $('helpL').onclick = rescue; }
+    if (c.act === 'point' && st && !NEED[st.type] && N.ph === 'idle' && st.passes.length) { $('pact').insertAdjacentHTML('afterbegin', `<button id="knotL" class="main">➰ ${st.type === 'intra' ? 'Tendre' : 'Nouer'} et terminer</button>`); $('knotL').onclick = () => knotStart(st.type === 'intra' ? 'tend' : 'final'); }
     lessonPointDone(); return;
   }
   const n = S.stitches.filter((x) => x.final || x.type && !x.multi).length;
@@ -1860,10 +1860,10 @@ function sutureStep() {
     if (S.plane === 'hemo' && !busy) acts.push(['✓ Vaisseau lié → plan profond', () => { if (!S.vesselOK) return toast('Le vaisseau saigne encore : point en X de part et d\'autre du point rouge.', 'mid'); S.plane = 'deep'; S.choices.point = 'buried'; buildGuides(); nReset(); toast('Saignement arrêté. Maintenant le plan profond : points enfouis.', 'good'); sutureStep(); }, 'main']);
     if (S.plane === 'deep' && !busy) acts.push(['✓ Plan profond fermé → peau', () => { if (!S.stitches.some((x) => x.type === 'buried' && x.final)) return toast('Faites au moins un point profond enfoui.', 'mid'); S.plane = 'skin'; S.choices.point = S.skinPoint; buildGuides(); nReset(); toast('Maintenant la peau : ' + D.POINTS[S.choices.point] + '.', 'good'); sutureStep(); }, 'main']);
     if (S.L.guides === 2 && !busy) acts.push(['👀 Montre-moi', demoStitch]);
-    if (S.level !== 'exam' && !N.auto && N.ph === 'knot' && !N.knotBusy) acts.push(['🪢 Nouer pour moi', rescue, 'main']);
-    if (S.level !== 'exam' && !N.auto) acts.push([`🪢 Nœud auto : ${save.autoKnot ? 'oui' : 'non'}`, () => { save.autoKnot = !save.autoKnot; persist(); toast(save.autoKnot ? 'Nœud automatique : après le passage de l\'aiguille, le nœud se fait tout seul (regardez les gestes).' : 'Nœud à faire vous-même.', ''); if (save.autoKnot && N.ph === 'knot') rescue(); else sutureStep(); }]);
+    if (S.level !== 'exam' && !N.auto && N.ph === 'knot' && !N.knotBusy) acts.push(['➰ Nouer pour moi', rescue, 'main']);
+    if (S.level !== 'exam' && !N.auto) acts.push([`➰ Nœud auto : ${save.autoKnot ? 'oui' : 'non'}`, () => { save.autoKnot = !save.autoKnot; persist(); toast(save.autoKnot ? 'Nœud automatique : après le passage de l\'aiguille, le nœud se fait tout seul (regardez les gestes).' : 'Nœud à faire vous-même.', ''); if (save.autoKnot && N.ph === 'knot') rescue(); else sutureStep(); }]);
     if (!N.auto && N.ph === 'cut') acts.push(['✂️ Couper', rescue, 'main']);
-    if (st && !NEED[type] && N.ph === 'idle' && st.passes.length) acts.push([type === 'intra' ? '🪢 Tendre et terminer' : '🪢 Nouer et terminer', () => knotStart(type === 'intra' ? 'tend' : 'final'), 'main']);
+    if (st && !NEED[type] && N.ph === 'idle' && st.passes.length) acts.push([type === 'intra' ? '➰ Tendre et terminer' : '➰ Nouer et terminer', () => knotStart(type === 'intra' ? 'tend' : 'final'), 'main']);
     acts.push(['↩ Annuler', nUndo]);
     acts.push(['Terminer', () => { if (busy) return toast('Terminez d\'abord le point en cours (ou ↩ Annuler).', 'mid'); n ? endSuture() : toast('Faites au moins un point.', 'mid'); }, busy ? '' : 'main']);
     panel(`${D.POINTS[type]} · ${n} fait${n > 1 ? 's' : ''}`, '', '', acts);
@@ -2016,7 +2016,7 @@ async function startLesson(key) {
   if (S.dirt) S.dirt.visible = false;
   setView(new THREE.Vector3(0, 0, 0), S.key === 'face' ? 4.2 : 5.4, 0.45, 0, true);
   if (key === 'couches' && guides) guides.visible = false;
-  S.lesson = key === 'atelier' ? [{ t: '🪢 Atelier nœud', x: '', act: 'knot' }] : pt ? pointLesson(key) : key === 'couches' ? layersLesson() : D.ANESTH_LESSON.map((x) => ({ ...x })); S.li = 0; S.step = 'lesson';
+  S.lesson = key === 'atelier' ? [{ t: '➰ Atelier nœud', x: '', act: 'knot' }] : pt ? pointLesson(key) : key === 'couches' ? layersLesson() : D.ANESTH_LESSON.map((x) => ({ ...x })); S.li = 0; S.step = 'lesson';
   lessonRender();
 }
 function layersSVG(hi) { // coupe schématique de la peau, couche surlignée
@@ -2033,7 +2033,7 @@ function layersLesson() {
     ...D.LAYERS_QUIZ.map((q, i) => ({ t: 'Question ' + (i + 1), x: '', quiz: q })),
   ];
 }
-// ---------------------------------------------------------------- 🪢 ATELIER NŒUD : l'aiguille passe toute seule, on ne
+// ---------------------------------------------------------------- ➰ ATELIER NŒUD : l'aiguille passe toute seule, on ne
 // s'entraîne qu'au nœud à la pince, autant de fois qu'on veut, avec la liste des étapes cochée en direct.
 const AT = { n: 0, ok: 0, last: null, seen: 0 };
 const KSTEP = { place: '⓪ Poser le porte-aiguille sur la plaie, entre les 2 brins', wrap: '① Enrouler le brin long autour (pince à disséquer ou gant)', grab: '② Porte-aiguille : saisir le bout court', pull: '③ Tirer à plat, chacun de son côté' };
@@ -2066,11 +2066,11 @@ function atelierPanel() {
   const acts = [];
   const tool = save.holdTool || 'pince';
   body += `<div class="row sbrow" id="atTool"><span style="align-self:center;font-size:13px;opacity:.8">Brin long tenu par :</span><button data-k="pince" class="${tool === 'pince' ? 'sel' : ''}">🔧 Pince à disséquer</button><button data-k="gant" class="${tool === 'gant' ? 'sel' : ''}">🧤 Main gantée</button></div>`;
-  if (N.ph === 'knot' && !N.auto && !N.knotBusy) acts.push(['🐢 Démo lente', async () => { N.slow = true; try { await rescue(); } finally { N.slow = false; } }, 'main'], ['🪢 Nouer pour moi', rescue]);
+  if (N.ph === 'knot' && !N.auto && !N.knotBusy) acts.push(['🐢 Démo lente', async () => { N.slow = true; try { await rescue(); } finally { N.slow = false; } }, 'main'], ['➰ Nouer pour moi', rescue]);
   if (N.ph === 'cut' && !N.auto) acts.push(['✂️ Couper', () => cutTap(0.75), 'main']);
   acts.push(['🔄 Nouveau nœud', () => { if (N.auto || N.knotBusy) return; clearStitches(); AT.seen = 0; AT.last = null; N.ph = 'idle'; N.st = null; N.kn = null; atelierNext(); }]);
   acts.push(['↩ Accueil', () => { if (N.auto || N.knotBusy) return; if (D.ATELIER) { AT.last = null; return startLesson('atelier'); } homeMode = 'learn'; home(); }]);
-  panel(`🪢 Atelier nœud <small style="opacity:.6">· ${AT.ok} réussi${AT.ok > 1 ? 's' : ''} sur ${AT.n}</small>`, 'L\'aiguille est déjà passée : vous ne faites que le nœud. Porte-aiguille à droite ; à gauche, le brin long tenu par une pince à disséquer ou les doigts gantés.', body, acts);
+  panel(`➰ Atelier nœud <small style="opacity:.6">· ${AT.ok} réussi${AT.ok > 1 ? 's' : ''} sur ${AT.n}</small>`, 'L\'aiguille est déjà passée : vous ne faites que le nœud. Porte-aiguille à droite ; à gauche, le brin long tenu par une pince à disséquer ou les doigts gantés.', body, acts);
   document.querySelectorAll('#atTool button').forEach((b) => (b.onclick = () => { save.holdTool = b.dataset.k; persist(); if (N.st) buildStitch(N.st); if (N.kn) knotCap(); atelierPanel(); }));
 }
 function knotLesson() { // nœud à la pince (MSF, « Exercice de nœuds à la pince »)

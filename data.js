@@ -153,7 +153,7 @@ export function suturePrep(bleeding, level) {
 // ---------------------------------------------------------------- SOINS DE PLAIES
 export const CARE = {
   corail: {
-    name: 'Plaie de corail', zone: 'Pied', icon: '🪸', model: 'care_corail',
+    name: 'Plaie de corail', zone: 'Pied', icon: '🐚', model: 'care_corail',
     desc: 'Éraflures en marchant sur le récif il y a 3 h. Plaies superficielles souillées, petits débris de corail incrustés, rougeur autour.',
     assess: ['Comment décrire cette plaie ?', ['Plaie souillée avec corps étrangers : risque d\'infection élevé', 'Plaie propre, rien à faire', 'Brûlure du 2e degré'], 0],
     steps: [
@@ -648,7 +648,7 @@ export const RISKS = {
 RISKS.cortico.adv = 1; RISKS.cortico.med = 1; RISKS.cortico.why = 'Corticoïdes au long cours : peau fine, cicatrisation lente, infection moins visible';
 // ---------------------------------------------------------------- BAC À SABLE
 export const SB = {
-  zones: { tete: ['💇 Cuir chevelu', 'scalp'], visage: ['🙂 Visage', 'face'], bras: ['💪 Bras / avant-bras', 'lin'], main: ['✋ Main', 'lin'], tronc: ['🫁 Tronc / dos', 'lin'], genou: ['🦵 Genou', 'curve'], jambe: ['🦵 Jambe / cuisse', 'lin'], pied: ['🦶 Pied', 'lin'], perinee: ['🌸 Périnée (peau)', 'lin'] },
+  zones: { tete: ['💇 Cuir chevelu', 'scalp'], visage: ['🙂 Visage', 'face'], bras: ['💪 Bras / avant-bras', 'lin'], main: ['✋ Main', 'lin'], tronc: ['👕 Tronc / dos', 'lin'], genou: ['🦵 Genou', 'curve'], jambe: ['🦵 Jambe / cuisse', 'lin'], pied: ['🦶 Pied', 'lin'], perinee: ['🌸 Périnée (peau)', 'lin'] },
   types: { nette: 'Coupure nette', courbe: 'Plaie courbe', beante: 'Béante, sous tension', profonde: 'Profonde (graisse, aponévrose)', vaisseau: 'Profonde, un vaisseau saigne' },
   bleeds: ['Aucun', 'Suintement', 'Veineux', 'Artériel (jet)'],
 };

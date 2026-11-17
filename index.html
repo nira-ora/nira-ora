@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Démo · Nira Ora – simulateur de suture</title>
+<meta name="theme-color" content="#16302d">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+<script type="importmap">{"imports":{"three":"./lib/three.module.min.js"}}</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="top">
+  <div id="brand">Nira Ora</div>
+  <div id="chips"><button id="help" title="Astuce">💡</button><button id="aide" title="Comment faire ?">❓</button><button id="quit" title="Accueil">✕</button><span id="lvlchip"></span><span id="pupu">🐚 0</span><span id="timer"></span></div>
+</div>
+
+<div id="bleedbar" class="hide"><span>🩸</span><div><i id="bleedfill"></i></div><b id="bleedtxt">Saignement</b></div>
+
+<div id="panel"><div id="ptitle"></div><div id="ptext"></div><div id="pbody"></div><div id="pact"></div></div>
+<div id="toast"></div>
+<div id="cap"></div>
+
+<div id="home">
+  <div class="homein">
+    <h1>Nira Ora</h1>
+    <p class="sub"><i>nira</i> : l'aiguille · <i>ora</i> : la vie</p>
+    <p class="sub2">Simulateur 3D de suture de plaie</p>
+    <div class="srch"><input id="q" type="search" placeholder="🔍 Rechercher : point, plaie, pansement, tuto…" autocomplete="off" aria-label="Rechercher"><div id="qres"></div></div>
+    <h3>Niveau</h3>
+    <div id="levels" class="row"></div>
+    <h3>Plaie</h3>
+    <div id="wounds" class="grid"></div>
+    <button id="menuTuto" style="margin-top:14px;width:100%">🎓 Revoir le tutoriel</button>
+        <label class="libre"><input type="checkbox" id="libre"> Mode libre (tout débloquer)</label>
+    <p class="warn">Outil d'entraînement éducatif. Il ne remplace pas une formation pratique encadrée ni un avis médical.</p>
+  </div>
+</div>
+<div id="landing" class="hide"><div class="lin">
+  <div class="logo">🪡</div>
+  <h1>Nira Ora</h1>
+  <p class="sub"><i>nira</i> : l'aiguille · <i>ora</i> : la vie</p>
+  <p class="pitch">Apprendre à suturer et à soigner les plaies, en 3D, sur votre téléphone.</p>
+  <div class="feat"><span>🪡 Suture</span><span>🩹 Soins de plaies</span><span>🚨 Urgence</span></div>
+  <button id="goMenu" class="main big2">▶ Commencer</button>
+  <button id="goTuto" class="big2">🎓 Tutoriel (1 min)</button>
+  <p class="warn">Outil d'entraînement éducatif : il ne remplace pas une formation pratique encadrée. Protocoles inspirés des recommandations de la Direction de la santé de Polynésie française.</p>
+</div></div>
+<div id="tuto" class="hide"><div class="tcard"><div id="tstep"></div><div id="tbody"></div><div class="row tnav"><button id="tprev">◀</button><button id="tskip">Passer</button><button id="tnext" class="main">Suivant ▶</button></div></div></div>
+<div id="coach" class="hide"><div class="ccard"><div id="ctitle"></div><div id="cbody"></div><div class="row"><button id="cok" class="main">J'ai compris</button><button id="coff">Ne plus afficher</button></div></div></div>
+<div id="loading">Chargement…</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

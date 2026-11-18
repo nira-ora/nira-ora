@@ -1,5 +1,5 @@
 // Nira Ora – service worker (hors ligne). Changer VERSION à chaque mise à jour.
-const VERSION = 'nira-v7.27';
+const VERSION = 'nira-v7.28';
 const FILES = ['./', 'index.html', 'style.css', 'app.js', 'data.js', 'manifest.json', 'icon-192.png',
   'lib/three.module.min.js', 'lib/jsm/loaders/GLTFLoader.js', 'lib/jsm/utils/BufferGeometryUtils.js', 'lib/jsm/environments/RoomEnvironment.js',
   'tex/skin_n.png', 'models/meta.json', 'models/care_meta.json', 'models/instruments.glb', 'models/dressings.glb'];

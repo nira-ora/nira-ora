@@ -1598,7 +1598,7 @@ function home() {
   $('pupu').textContent = '🐚 ' + save.pupu; $('lvlchip').textContent = '';
   const lv = $('levels'); lv.innerHTML = '';
   const modes = document.createElement('div'); modes.className = 'row'; modes.style.marginBottom = '8px';
-  for (const [k, l] of [['learn', '🎓 Apprendre'], ['suture', '🧵 Suture'], ['care', '🩹 Soins'], ['urg', '🚨 Urgence'], ['sb', '🧪 Bac à sable']]) { const b = document.createElement('button'); b.textContent = l; if (k === homeMode) b.className = 'sel';
+  for (const [k, l] of [['learn', '🎓 Apprendre'], ['suture', '✂️ Suture'], ['care', '🩹 Soins'], ['urg', '🚨 Urgence'], ['sb', '🧪 Bac à sable']]) { const b = document.createElement('button'); b.textContent = l; if (k === homeMode) b.className = 'sel';
     if (D.DEMO && k === 'sb') { b.className = 'off'; b.textContent = '🔒 ' + l.slice(3); b.onclick = demoLock; } else b.onclick = () => { homeMode = k; home(); }; modes.appendChild(b); }
   lv.appendChild(modes);
   if (D.DEMO) { const bn = document.createElement('div'); bn.className = 'info'; bn.style.margin = '0 0 8px'; bn.innerHTML = '🧪 <b>Version de démonstration</b> : les exercices en gris 🔒 sont dans la version complète (7 sutures, 16 soins, 3 urgences, 12 leçons, bac à sable, photo → 3D, niveaux Avancé et Examen).'; lv.appendChild(bn); }
@@ -1610,7 +1610,7 @@ function home() {
   if (homeMode === 'sb') return sbForm(wg);
   if (homeMode === 'learn') {
     row.style.display = 'none';
-    const L = [['couches', '🧬 Les couches de la peau', 'Épiderme, derme, graisse, aponévrose, muscle'], ['atelier', '➰ Atelier nœud', 'Seulement le nœud, à répéter : l\'aiguille passe pour vous'], ['noeud', '➰ Le nœud à la pince', 'Enrouler, saisir le bout court, tirer à plat ; 3 jetés'], ['anesth', '💉 Anesthésie locale', 'Pas à pas : dose, matériel, où piquer, surveiller'], ...Object.keys(D.POINTS).map((k) => [k, '🧵 ' + D.POINTS[k], 'Fiche + démonstration + à vous'])];
+    const L = [['couches', '🧬 Les couches de la peau', 'Épiderme, derme, graisse, aponévrose, muscle'], ['atelier', '➰ Atelier nœud', 'Seulement le nœud, à répéter : l\'aiguille passe pour vous'], ['noeud', '➰ Le nœud à la pince', 'Enrouler, saisir le bout court, tirer à plat ; 3 jetés'], ['anesth', '💉 Anesthésie locale', 'Pas à pas : dose, matériel, où piquer, surveiller'], ...Object.keys(D.POINTS).map((k) => [k, '✂️ ' + D.POINTS[k], 'Fiche + démonstration + à vous'])];
     for (const [k, n, d] of L) { const c = document.createElement('button'); const off = D.DEMO && !D.DEMO_KEEP.learn.includes(k); c.className = 'card' + (off ? ' off' : ''); const done = (save.learn || {})[k]; c.innerHTML = `<b>${n}</b><small>${d}</small><span class="st">${off ? '🔒 Version complète' : done ? '✓ faite' : ''}</span>`; c.onclick = off ? demoLock : () => startLesson(k); wg.appendChild(c); }
     return;
   }
@@ -1638,18 +1638,18 @@ const fold = (t) => String(t).toLowerCase().replace(/œ/g, 'oe').replace(/æ/g, 
 function popInfo(t, b) { $('ctitle').innerHTML = t; $('cbody').innerHTML = b; $('coach').classList.remove('hide'); $('cok').onclick = () => $('coach').classList.add('hide'); $('coff').onclick = $('cok').onclick; }
 function searchIndex() {
   const I = [], lv = () => homeLevel === 'exam' ? 'int' : homeLevel;
-  for (const k of D.SUTURE_ORDER) { const w = D.SUTURE[k]; I.push(['🧵 Suture', `${w.icon} ${w.name} · ${w.zone}`, w.desc, () => start('suture', k, lv())]); }
+  for (const k of D.SUTURE_ORDER) { const w = D.SUTURE[k]; I.push(['✂️ Suture', `${w.icon} ${w.name} · ${w.zone}`, w.desc, () => start('suture', k, lv())]); }
   for (const k of D.CARE_ORDER) { const w = D.CARE[k]; I.push(['🩹 Soins', `${w.icon} ${w.name} · ${w.zone}`, w.desc, () => start('care', k, lv())]); }
   for (const k in D.URGENCE) { const w = D.URGENCE[k]; I.push(['🚨 Urgence', `${w.icon} ${w.name}`, w.desc, () => start('urg', k, lv())]); }
   I.push(['🎓 Apprendre', '🧬 Les couches de la peau', 'épiderme derme hypoderme graisse aponévrose muscle', () => startLesson('couches')]);
   I.push(['🎓 Apprendre', '➰ Atelier nœud', 'atelier noeud nœud entraînement répéter', () => startLesson('atelier')]);
   I.push(['🎓 Apprendre', '➰ Le nœud à la pince', 'noeud nœud jeté enrouler porte-aiguille chirurgien serrer couper', () => startLesson('noeud')]);
   I.push(['🎓 Apprendre', '💉 Anesthésie locale', 'lidocaïne dose injection où piquer spray', () => startLesson('anesth')]);
-  for (const k in D.POINTS) I.push(['🎓 Point', '🧵 ' + D.POINTS[k], D.POINT_INFO[k] + ' ' + Object.values(D.FICHES[k] || {}).flat().join(' '), () => startLesson(k)]);
+  for (const k in D.POINTS) I.push(['🎓 Point', '✂️ ' + D.POINTS[k], D.POINT_INFO[k] + ' ' + Object.values(D.FICHES[k] || {}).flat().join(' '), () => startLesson(k)]);
   TUTO.forEach(([t, b], i) => I.push(['📖 Tutoriel', t, b, () => tuto(i)]));
   for (const k in D.DRESSINGS) { const x = D.DRESSINGS[k]; I.push(['🩹 Pansement', x.name, x.note || '', () => popInfo('🩹 ' + x.name, x.note || '')]); }
   for (const k in D.PRODUCTS) { const x = D.PRODUCTS[k]; I.push(['🧴 Produit', x.name, x.note || '', () => popInfo('🧴 ' + x.name, x.note || '')]); }
-  for (const k in D.CLOSE) { const x = D.CLOSE[k]; I.push(['🧵 Fermeture', x.name, x.note || '', () => popInfo('🧵 ' + x.name, x.note || '')]); }
+  for (const k in D.CLOSE) { const x = D.CLOSE[k]; I.push(['✂️ Fermeture', x.name, x.note || '', () => popInfo('✂️ ' + x.name, x.note || '')]); }
   for (const k in D.RISKS) { const x = D.RISKS[k]; I.push(['👤 Patient', x.name || x.n, (x.why || '') + ' cicatrisation infection facteur', () => popInfo('👤 ' + x.n, (x.why ? x.why + '. ' : '') + 'Ce facteur change l\'« Évolution prévue » du bilan. ' + (x.adv ? 'Disponible en Avancé et en Examen (bac à sable), et tiré au hasard dans les cas de ces niveaux.' : 'À choisir dans le bac à sable.'))]); }
   I.push(['🧪 Bac à sable', '🧪 Créer son cas', 'bac à sable zone corps tête bras jambe pied périnée main multiple délai', () => { homeMode = 'sb'; home(); }]);
   const out = I.map((x) => ({ g: x[0], t: x[1], f: fold(x[1] + ' ' + x[2] + ' ' + x[0]), go: x[3] }));
@@ -1821,7 +1821,7 @@ function choose(force) {
     const isFil = D.CLOSE[S.choices.close].kind === 'fil';
     setView(new THREE.Vector3(13.4, -1.5, 0), 12.5, 0.42, 0); highlightNeedle();
     panel('Matériel conseillé', `Pour une ${w.name.toLowerCase()} (${w.zone.toLowerCase()}) :`,
-      `<div class="info" style="font-size:15px">🧵 ${D.CLOSE[S.choices.close].name}${isFil ? `<br>🧵 ${D.NEEDLES[S.choices.needle].name}<br>📏 Fil ${S.choices.fil} · ${D.POINTS[S.choices.point]}<br><small>${D.POINT_INFO[S.choices.point]}</small>` : ''}<br><small>${D.CLOSE[S.choices.close].note}</small></div>`,
+      `<div class="info" style="font-size:15px">✂️ ${D.CLOSE[S.choices.close].name}${isFil ? `<br>✂️ ${D.NEEDLES[S.choices.needle].name}<br>📏 Fil ${S.choices.fil} · ${D.POINTS[S.choices.point]}<br><small>${D.POINT_INFO[S.choices.point]}</small>` : ''}<br><small>${D.CLOSE[S.choices.close].note}</small></div>`,
       [['Commencer', () => sutureStart(), 'main'], ['Changer', () => choose(true)]]);
     return;
   }

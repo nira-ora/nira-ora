@@ -133,3 +133,7 @@ input.big{width:100%;height:44px;accent-color:#f7c873}
 
 /* démo : contenu de la version complète, en gris */
 .card.off,button.off{opacity:.42;filter:grayscale(1)}
+
+/* v7.27 : les boutons du panneau restent visibles en bas, même quand le contenu défile (bilan) */
+#pact{position:sticky;bottom:calc(-12px - env(safe-area-inset-bottom));background:#122624;padding:8px 0 calc(env(safe-area-inset-bottom) + 4px);margin-bottom:calc(-12px - env(safe-area-inset-bottom));z-index:1}
+#panel.bilan{max-height:70vh}

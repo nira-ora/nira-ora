@@ -632,6 +632,8 @@ function poseOnPass(pass, psiTip, lift, gfrac = GRIP) {
   animN.visible = animH.visible = true;
   const tip = pass.at(psiTip); if (lift) tip.add(lift); return tip;
 }
+// v7.25 : point juste DERRIÈRE le chas, dans le prolongement de l'aiguille : le fil sort du chas dans l'axe, sans coude
+function swageBack() { const G0 = needleGeo(), d = 0.28; return padGroup.worldToLocal(animN.localToWorld(G0.straight ? new V3(0.4, -G0.L / 2 - d, 0) : new V3(G0.r * Math.cos(-d / G0.r), G0.r * Math.sin(-d / G0.r), 0))); }
 function swageLocal() { const G0 = needleGeo(); return padGroup.worldToLocal(animN.localToWorld(G0.straight ? new V3(0.4, -G0.L / 2, 0) : new V3(G0.r, 0, 0))); }
 function fakePass(base, e, r, lift) {
   const center = base.clone(); center.y += r + lift;
@@ -693,7 +695,7 @@ function archPts(a, b, h, out, n = 7) { for (let i = 0; i <= n; i++) { const u =
 function tailCurve(A, T) { // brin court couché sur la peau, qui part de l'entrée
   const sg = Math.sign(A.q.s) || 1, ox = sg * A.q.nx, oz = sg * A.q.nz, sd = (A.P0.x * A.q.tx + A.P0.z * A.q.tz) >= 0 ? 1 : -1, yd = S.drape ? 0.14 : 0.025, pts = [];
   const n = clamp(Math.ceil(T / 0.25), 2, 44);
-  for (let i = 0; i <= n; i++) { const s = T * i / n, o = 1.0 * (1 - Math.exp(-s / 0.7)) + 0.08 * Math.sin(s * 1.7), l = Math.max(0, s - 0.5) * 0.93, k = clamp((s - 0.6) / 1.0);
+  for (let i = 0; i <= n; i++) { const s = T * i / n, o = 1.0 * (1 - Math.exp(-s / 0.7)) + 0.08 * Math.sin(s * 1.7), l = 0.93 * 0.45 * Math.log(1 + Math.exp((s - 0.55) / 0.45)), /* v7.25 : virage arrondi (avant : coude net à 5 mm) */ k = clamp((s - 0.6) / 1.0);
     pts.push(new V3(A.P0.x + ox * o + A.q.tx * sd * l, 0.025 + (yd - 0.025) * k * k * (3 - 2 * k), A.P0.z + oz * o + A.q.tz * sd * l)); }
   return pts;
 }
@@ -864,7 +866,7 @@ function knotStart(kind) {
 const wrapNeed = (k) => (k.throws.length === 0 ? 2 : 1);
 function knotCap() {
   const k = N.kn; if (!k) return; if (S && S.lessonKey === 'atelier') setTimeout(atelierPanel, 0); const n = k.throws.length, j = `Jeté ${n + 1}/${k.need} · `;
-  if (k.step === 'place') nCap(j + '⓪ Posez le porte-aiguille sur la plaie, ENTRE les 2 brins, parallèle à la plaie : touchez le rond blanc.', 'Poser la pince');
+  if (k.step === 'place') nCap(j + '⓪ Placez le porte-aiguille juste au-dessus de la plaie, ENTRE les 2 brins, parallèle à la plaie : touchez le rond blanc.', 'Poser la pince');
   else if (k.step === 'wrap') nCap(j + `① Enroulez le brin long autour du porte-aiguille, VERS le bout court (${easyK() ? 'touchez le rond jaune' : 'petit glissé dans le sens de la flèche verte'}) : ${wrapNeed(k) === 2 ? '2 tours, ou 3 si le fil glisse (nœud du chirurgien)' : '1 tour'}${n ? ', dans l\'autre sens que le jeté d\'avant' : ''}. (${k.wraps}/${wrapNeed(k)})`, 'Enrouler');
   else if (k.step === 'grab') nCap(j + '② Les boucles restent sur les mors : ouvrez-les et allez saisir le bout court par son extrémité (touchez-le, rond bleu).', 'Saisir le bout court');
   else nCap(j + `③ Tirez à plat : les boucles glissent hors des mors sur le bout court ; le porte-aiguille le ramène de l'autre côté (glissez, flèche jaune), ${(save.holdTool || 'pince') === 'pince' ? 'la pince à disséquer' : 'la main gantée'} tire le brin long dans l'autre sens. Les deux tirent parallèle à la peau.` + (n === 0 && !easyK() ? ' Plus vous allez loin, plus ça serre.' : ''), 'Tirer');
@@ -874,7 +876,7 @@ function knotAnim(k, ms, fn) { const st = N.st, id = (k.aid = (k.aid || 0) + 1);
 function knotTap(p) { // étapes ① et ② : de simples touchers
   const k = N.kn, easy = easyK() || N.auto;
   if (k.step === 'place') {
-    if (!easy && k.HT && p.distanceTo(k.HT.clone().setY(p.y)) > 1.2) return toast('Touchez la plaie entre les 2 brins (rond blanc) pour y poser la pince.', 'mid');
+    if (!easy && k.HT && p.distanceTo(k.HT.clone().setY(p.y)) > 1.2) return toast('Touchez la plaie entre les 2 brins (rond blanc) pour y placer la pince, juste au-dessus.', 'mid');
     k.step = 'wrap'; k.pT = 0; vib(6); knotAnim(k, 450 * KS(), (u) => (k.pT = u));
   } else if (k.step === 'wrap') {
     if (!easy && k.HT && p.distanceTo(k.HT.clone().setY(p.y)) > 1.1) return toast('Touchez le porte-aiguille (rond jaune) pour enrouler le fil.', 'mid');
@@ -986,19 +988,19 @@ function nTick(dt) {
 function threadFrame() {
   if (!LIVE.mesh.parent) padGroup.add(LIVE.mesh); if (!TAILT.mesh.parent) padGroup.add(TAILT.mesh);
   if (!animN.visible || N.ph === 'knot' || N.ph === 'cut') { LIVE.mesh.visible = TAILT.mesh.visible = false; return; }
-  const st = N.st, d = N.d, r = D.FILS[S.choices.fil] || 0.019, sw = swageLocal(), pts = [];
+  const st = N.st, d = N.d, r = D.FILS[S.choices.fil] || 0.019, sw = swageLocal(), sb = swageBack(), pts = [];
   const lastB = st && st.passes.length ? deformPoint(st.passes[st.passes.length - 1].B0).setY(0.02) : null;
   let tail = null;
   if (!d) {
-    if (lastB) { pts.push(lastB); sag(lastB, sw, pts); pts.push(sw); }
-    else { const o = N.parkOut || new V3(0, 0, 1), g0 = new V3(sw.x + o.x * 0.5, 0.03, sw.z + o.z * 0.5); pts.push(g0.clone().addScaledVector(o, 3.5), g0.clone().addScaledVector(o, 1.5), g0); sag(g0, sw, pts); pts.push(sw); }
+    if (lastB) { pts.push(lastB); sag(lastB, sb, pts); pts.push(sb, sw); }
+    else { const o = N.parkOut || new V3(0, 0, 1), g0 = new V3(sw.x + o.x * 0.5, 0.03, sw.z + o.z * 0.5); pts.push(g0.clone().addScaledVector(o, 3.5), g0.clone().addScaledVector(o, 1.5), g0); sag(g0, sb, pts); pts.push(sb, sw); }
   } else {
     const Th = needleGeo().Th, A0 = d.P.clone().setY(0.015), first = d.i === 0, chain = [], sp = d.psi - Th, pulling = N.ph === 'out' || N.ph === 'pull';
     const fin = !d.two || d.stage === 2, cur = d.pass || d.p1;
     if (d.two && (d.stage === 2 || N.ph === 'mid')) { chain.push(A0); arcPts(d.p1, d.p1.aP, d.p1.aQ, chain); chain.push(d.P2.clone()); if (cur === d.p2 && sp > d.p2.aP) { arcPts(d.p2, d.p2.aP, Math.min(d.p2.aQ, sp), chain); } }
     else if (cur && sp > cur.aP) { chain.push(A0); arcPts(cur, cur.aP, Math.min(cur.aQ, sp), chain); }
     const slack = pulling && !first ? clamp(1 - pullEff() / 90) : 1;
-    if (!chain.length) { const a = first ? A0 : lastB; pts.push(a); sag(a, sw, pts); pts.push(sw); }
+    if (!chain.length) { const a = first ? A0 : lastB; pts.push(a); sag(a, sb, pts); pts.push(sb, sw); }
     else { if (!first && lastB) archPts(lastB, A0, 0.06 + 0.5 * slack, pts); for (const p of chain) pts.push(p); const le = pts[pts.length - 1]; if (le.distanceTo(sw) > 0.12) sag(le, sw, pts, 5); pts.push(sw); }
     if (first) { const T = pulling ? tailLen() : T0; tail = tailCurve(d.A, T); TAIL_MAT.color.setHex(pulling && S.L.guides && T >= 2 && T <= 4 ? 0x2fae5a : 0x1d2a6b); }
   }
@@ -1084,7 +1086,7 @@ function buildThread(st) {
       const qK = nearest(Kh.x, Kh.z), nrm = (sd) => new V3(qK.nx * sd, 0, qK.nz * sd), tv = new V3(qK.tx, 0, qK.tz);
       const nT = kn.throws.length, ss = nT ? kn.throws[nT - 1] : (Math.sign(st.passes[0].A.q.s) || 1), step = kn.step, dirW = nT % 2 ? -1 : 1;
       const TT = Kh.clone().addScaledVector(nrm(ss), 0.8).setY(0.05); kn.TT = TT.clone();
-      const HT = Kh.clone().addScaledVector(tv, 0.05).setY(0.13); kn.HT = HT.clone();
+      const HT = Kh.clone().addScaledVector(tv, 0.05).setY(0.42); kn.HT = HT.clone(); // v7.19 : on enroule en l'air (≈ 4 mm au-dessus de la plaie), pas sur la peau
       const wv = kn.wv != null ? kn.wv : kn.wraps, gT = kn.gT || 0, cross = -ss;
       let tip = HT.clone(), p = 0; // p = avancée de la traction (0 → 1)
       const rest = kn.back || Kh.clone().addScaledVector(tv, 0.55).addScaledVector(nrm(-ss), 0.45).setY(0.55); // pince au repos, en l'air
@@ -1093,26 +1095,47 @@ function buildThread(st) {
       if (step === 'grab' || step === 'pull') tip.lerp(TT.clone().setY(0.07), ease(gT));
       if (step === 'pull' && kn.cur) { tip = kn.cur.clone().setY(0.1); p = clamp((tip.clone().sub(TT).dot(nrm(cross))) / 1.5); }
       const up = new V3(0, 1, 0), side = tv.clone().cross(up).normalize(), open = step === 'grab' && gT < 0.8 ? 0.05 : 0.02;
+      // v7.20 (vidéos de référence) : c'est le PORTE-AIGUILLE qui tourne autour du brin long, la main gauche reste
+      // haute et immobile. Pendant chaque tour, la pointe décrit un petit cercle (≈ 1,5 cm) autour du fil.
+      // v7.24 (Brian) : c'est la PINCE qui fait les 2 enroulements. À chaque tour, sa pointe fait un cercle complet AUTOUR
+      // du brin long (axe nœud → main gauche) : 1er tour, puis 2e tour, et les boucles se forment sur les mors.
+      { const fr = (kn.wv != null ? kn.wv : kn.wraps) % 1; if (step === 'wrap' && (kn.pT || 0) >= 1 && fr > 0.01 && fr < 0.995) {
+        const hE = kn.sp ? kn.sp.p : Kh.clone().addScaledVector(nrm(-ss), 0.75).setY(1.25), dS = hE.clone().sub(Kh).normalize();
+        const P = Kh.clone().addScaledVector(dS, HT.clone().sub(Kh).dot(dS)), w = P.clone().sub(HT); const R = Math.max(0.18, w.length()); w.normalize();
+        const v = dS.clone().cross(w).normalize(), o = fr * 2 * PI * (nT % 2 ? -1 : 1), C = HT.clone().addScaledVector(w, R);
+        tip.copy(C).addScaledVector(w, -R * Math.cos(o)).addScaledVector(v, -R * Math.sin(o)); } }
       for (const sg of [-1, 1]) g.add(tube([tip.clone().addScaledVector(side, open * sg), tip.clone().addScaledVector(tv, 0.45).addScaledVector(side, 0.03 * sg).setY(tip.y + 0.04), tip.clone().addScaledVector(tv, 1.7).addScaledVector(side, 0.09 * sg).setY(tip.y + 0.32)], 0.03, STEEL_PLAIN));
       // hélice du brin long : autour de la pince, puis (traction) elle quitte la pince, glisse sur le fil et se resserre
       // v7.13 : les boucles RESTENT sur les mors du porte-aiguille quand il va chercher le bout court (il « rentre » dans
       // les boucles) ; à la traction elles glissent hors des mors, sur le bout court, et se resserrent sur le nœud.
       const toK = Kh.clone().sub(tip); toK.y = 0; const dK = toK.length() || 1; toK.multiplyScalar(1 / dK);
       const ax = tv.clone().lerp(toK, ease(clamp(p * 1.6))).normalize(), axS = ax.clone().cross(up).normalize();
-      const c0 = tip.clone().addScaledVector(tv, 0.14), cC = c0.clone().lerp(Kh.clone().setY(Kh.y + 0.02), ease(p));
-      const rad = lerp(0.07, r * 2.2, ease(p)), pitch = lerp(0.085, r * 2.4, ease(p));
-      const hel = []; const nSeg = Math.max(2, Math.round(wv * 22));
-      if (wv > 0.02) for (let i = 0; i <= nSeg; i++) { const u = i / nSeg, a = u * wv * 2 * PI * dirW; hel.push(cC.clone().addScaledVector(ax, u * wv * pitch).addScaledVector(up, rad * Math.cos(a) - rad * 0.2).addScaledVector(axS, rad * Math.sin(a))); }
+      // v7.19 : l'hélice suit l'axe des mors (qui montent un peu) et les entoure SANS les traverser :
+      // rayon = écartement des mors + épaisseur des mors (0,03) + fil + jeu
+      const dJ = tv.clone().multiplyScalar(0.45).addScaledVector(up, 0.04).normalize();
+      const axH = dJ.clone().lerp(ax, ease(clamp(p * 1.6))).normalize(), uH = up.clone().addScaledVector(axH, -up.dot(axH)).normalize(), sH = axH.clone().cross(uH).normalize();
+      const c0 = tip.clone().addScaledVector(dJ, 0.1), cC = c0.clone().lerp(Kh.clone().setY(Kh.y + 0.02), ease(p));
+      const radJ = open + 0.03 + r * 1.4 + 0.012, rad = lerp(radJ, r * 2.2, ease(p)), pitch = lerp(Math.max(0.075, r * 3.2), r * 2.4, ease(p));
+      const hel = []; const nSeg = Math.max(2, Math.round(wv * 26));
+      // v7.22 : l'hélice COMMENCE du côté du nœud et FINIT du côté de la main gauche : le brin qui part vers la main
+      // ne traverse plus les mors (avant, au 2e tour, il sortait sous la pince et coupait à travers).
+      // v7.24 (Brian) : le 1er tour est le plus PROFOND sur les mors (côté articulation), le 2e se pose plus près de la pointe
+      const Nt = Math.max(kn.step === 'wrap' || kn.step === 'grab' ? wrapNeed(kn) : 1, Math.ceil(wv - 1e-3));
+      const angOf = (v) => Math.atan2(v.dot(sH), v.dot(uH)), wrapPi = (t) => t - 2 * PI * Math.round(t / (2 * PI));
+      const handE = kn.sp ? kn.sp.p : Kh.clone().addScaledVector(nrm(-ss), 0.75).setY(1.25), cE = cC.clone().addScaledVector(axH, (Nt - wv) * pitch);
+      const a0 = angOf(Kh.clone().sub(cC.clone().addScaledVector(axH, Nt * pitch))), aE = angOf(handE.clone().sub(cE)), s0 = wv * 2 * PI * dirW;
+      let sweep = s0 + wrapPi(aE - (a0 + s0)); if (sweep * dirW < 0) sweep += 2 * PI * dirW;
+      if (wv > 0.02) for (let i = 0; i <= nSeg; i++) { const u = i / nSeg, a = a0 + u * sweep; hel.push(cC.clone().addScaledVector(axH, (Nt - u * wv) * pitch).addScaledVector(uH, rad * Math.cos(a)).addScaledVector(sH, rad * Math.sin(a))); }
       kn.SD = nrm(ss).clone(); // côté du bout court : on enroule VERS lui
       // main qui tient le brin long : elle tourne pendant l'enroulement, puis part du côté opposé au bout court
       const frac = wv - Math.floor(wv), orbit = step === 'wrap' || frac > 0.02 ? frac * 2 * PI * dirW : 0;
-      const LH0 = Kh.clone().addScaledVector(nrm(-ss), 1.0).setY(0.32).addScaledVector(up, 0.12 * Math.sin(orbit)).addScaledVector(side, 0.22 * Math.sin(orbit)).addScaledVector(nrm(-ss), 0.15 * (Math.cos(orbit) - 1));
+      const LH0 = Kh.clone().addScaledVector(nrm(-ss), 0.75).setY(1.25).addScaledVector(side, 0.04 * Math.sin(orbit)); // main haute, quasi immobile
       const LH1 = Kh.clone().addScaledVector(nrm(ss), 1.05).setY(0.14), LH = LH0.clone().lerp(LH1, ease(p));
       // v7.10 : le fil a du poids et de la souplesse. La main suit avec un petit retard (ressort amorti, kn.sp) ; entre
       // les boucles et la main le fil pend (chaînette) tant qu'il est lâche et se tend quand on tire (p → 1).
       const spr = kn.sp || (kn.sp = { p: LH.clone(), v: new V3() }); spr.v.addScaledVector(LH.clone().sub(spr.p), 0.22).multiplyScalar(0.72); spr.p.add(spr.v);
       kn.settle = spr.v.length() > 0.004 || spr.p.distanceTo(LH) > 0.01 ? 3 : Math.max(0, (kn.settle || 0) - 1);
-      const LHs = spr.p.clone(), slack = (1 - ease(p)) * (step === 'pull' ? 0.6 : 1);
+      const LHs = spr.p.clone(), slack = (1 - ease(p)) * (step === 'pull' ? 0.6 : 0.35); // brin long tenu presque tendu
       const hang = (a, b, n, sag) => { const out = []; for (let i = 1; i <= n; i++) { const u = i / (n + 1), q = a.clone().lerp(b, u); q.y = Math.max(0.1, q.y - sag * 4 * u * (1 - u)); out.push(q); } return out; };
       const lp = longPre ? longPre.slice(0, -1) : []; lp.push(Kh.clone());
       if (hel.length) { lp.push(Kh.clone().lerp(hel[0], 0.5).setY(Kh.y + 0.03)); for (const h of hel) lp.push(h); const e = hel[hel.length - 1]; lp.push(...hang(e, LHs, 4, 0.08 * slack * e.distanceTo(LHs))); }
@@ -1126,8 +1149,9 @@ function buildThread(st) {
         else { const gm = kn.gloveM || (kn.gloveM = new THREE.MeshStandardMaterial({ color: 0x6f9fd8, roughness: 0.55 }));
           for (const [sg, L] of [[-1, 0.42], [1, 0.36]]) { const a0 = LHs.clone().addScaledVector(sd2, 0.055 * sg), a1 = a0.clone().addScaledVector(hd, L).addScaledVector(sd2, 0.04 * sg); g.add(tube([a0, a0.clone().lerp(a1, 0.5), a1], 0.05, gm)); const tipS = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 8), gm); tipS.position.copy(a0); g.add(tipS); } }
       } g.add(tubeS(lp, r, mat)); // UN seul fil : sortie de la peau → nœud → boucles → main kn.LH = LH.clone(); kn.TIP = tip.clone();
-      // bout court (bleu clair) : couché sur la peau, puis tenu par la pince et ramené à travers les boucles
-      const shortM = kn.shortM || (kn.shortM = new THREE.MeshStandardMaterial({ color: 0x58c8ff, roughness: 0.3 }));
+      // bout court : MÊME fil, même couleur (un bout d'une autre couleur faisait croire à un 2e fil) ;
+      // il est repéré seulement par l'anneau bleu (niveau Débutant) et l'étiquette « bout court »
+      const shortM = mat;
       const held = step === 'pull' && (gT > 0.95 || kn.cur);
       const sp = tailPre ? [...tailPre, Kh.clone()] : [Kh.clone()], se = held ? tip : (step === 'place' && kn.back ? kn.back.clone().setY(0.06) : step === 'wrap' && kn.back && (kn.pT || 0) < 1 ? kn.back.clone().setY(0.06).lerp(TT, ease(kn.pT || 0)) : TT);
       if (held) { const dS = Kh.distanceTo(se), sagS = 0.1 * (1 - ease(p)) * dS; for (const u of [0.3, 0.6]) { const q = Kh.clone().lerp(se, u); q.y = Math.max(0.03, q.y - sagS * 4 * u * (1 - u)); sp.push(q); } } // tenu : il pend puis se tend
@@ -1211,7 +1235,7 @@ async function autoKnot() {
   const st = N.st, k = N.kn; if (!st || !k) return; caption(k.kind === 'tend' ? 'Tendre le fil pour rapprocher les berges' : 'Nœud : glisser par-dessus la plaie, puis dans l\'autre sens');
   let s = Math.sign(st.passes[0].A.q.s) || 1; const need = k.need;
   for (let j = 0; j < need && N.ph === 'knot'; j++) { const a = ptAt(st.t, s, 0.5).P0, b = ptAt(st.t, -s, j === 0 ? 0.92 : 0.6).P0;
-    if (N.kn && N.kn.step === 'place') { caption(j === 0 ? '⓪ Le porte-aiguille se pose sur la plaie, entre les 2 brins, parallèle à la plaie' : '⓪ Le porte-aiguille revient se poser entre les 2 brins'); await sleep(350 * KS()); knotTap(N.kn.HT || a); await sleep(550 * KS()); }
+    if (N.kn && N.kn.step === 'place') { caption(j === 0 ? '⓪ Le porte-aiguille se place juste au-dessus de la plaie, entre les 2 brins, parallèle à elle' : '⓪ Le porte-aiguille revient se poser entre les 2 brins'); await sleep(350 * KS()); knotTap(N.kn.HT || a); await sleep(550 * KS()); }
     while (N.kn && N.kn.step === 'wrap') { caption(j === 0 ? '① La main gauche enroule le brin long 2 fois autour du porte-aiguille (nœud du chirurgien)' : '① 1 tour, dans l\'autre sens'); await sleep(250 * KS()); knotTap(N.kn.HT || a); await sleep(650 * KS()); }
     if (N.kn && N.kn.step === 'grab') { caption('② Le porte-aiguille saisit le bout court par son extrémité'); await sleep(250 * KS()); knotTap(N.kn.TT || a); await sleep(700 * KS()); }
     caption('③ On tire à plat : porte-aiguille et bout court d\'un côté, brin long de l\'autre (pince ou gant)'); await sleep(250 * KS()); throwDown(a); await tween(1100 * KS(), (u) => throwMove(a.clone().lerp(b, ease(u)))); throwUp(); s = -s; }
@@ -1378,10 +1402,10 @@ function tapRemove(p) {
   if (!best) return toast(R0.type === 'agrafe' ? 'Touchez une agrafe.' : 'Touchez un point (son nœud).', 'mid');
   const it = best, inf = R0.infect != null, ok = !inf || Math.abs(it.k - R0.infect) <= 1;
   const count = () => { if (inf) { if (it.k === R0.infect) S.act.done = 1; else if (!ok) { S.act.bleeds++; S.act.extra++; S.errors.push('Point sain retiré trop tôt (J5 sur une jambe) : risque que la cicatrice s\'ouvre.'); toast('✗ Ce point est sain : à J5 sur une jambe, on le laisse.', 'bad'); } } else S.act.done++; };
-  if (R0.type === 'agrafe') { flashForceps(it.C); vib(10); toast('✓ L\'ôte-agrafes glissé dessous, on serre : l\'agrafe s\'ouvre et sort.', 'good'); it.st = 1; remBuild(it); remOut(it); count(); return actionProgress(); }
+  if (R0.type === 'agrafe') { flashForceps(it.C); vib(10); toast('✓ Les 2 mors glissés entièrement sous l\'agrafe, serrés à fond : elle se plie au milieu, ses pointes sortent ; on la soulève d\'un seul geste.', 'good'); it.st = 1; remBuild(it); remOut(it); count(); return actionProgress(); }
   if (it.st === 0) { if (it.A.distanceTo(p.clone().setY(0.012)) > 0.45 && it.C.distanceTo(p.clone().setY(0.012)) > 0.3 && !(S.level === 'deb')) return toast('Saisissez d\'abord le nœud avec la pince (côté nœud).', 'mid'); it.st = 1; remBuild(it); flashForceps(it.A); vib(8); return toast('Nœud soulevé. Touchez maintenant le fil sous le nœud, au ras de la peau (rond jaune), pour couper.', ''); }
   const dA = it.A.distanceTo(p.clone().setY(0.012)), dB = it.B.distanceTo(p.clone().setY(0.012));
-  if (dA < 0.4 || (S.level === 'deb' && dA < dB)) { vib(12); toast(inf && it.k === R0.infect ? '✓ Point retiré : le pus s\'écoule. Nettoyez, avis médical.' : '✓ Coupé sous le nœud au ras de la peau, puis tiré : fil complet.', 'good'); remOut(it); count(); }
+  if (dA < 0.4 || (S.level === 'deb' && dA < dB)) { vib(12); toast(inf && it.k === R0.infect ? '✓ Point retiré : le pus s\'écoule. Nettoyez, avis médical.' : '✓ Coupé sous le nœud au ras de la peau, puis tiré vers la cicatrice : seul le fil qui était sous la peau la traverse.', 'good'); remOut(it); count(); }
   else { S.act.bleeds++; S.errors.push('Fil coupé du mauvais côté : la partie extérieure, souillée, repasse sous la peau.'); toast('✗ On coupe sous le nœud, au ras de la peau, côté nœud : sinon le fil sale repasse sous la peau.', 'bad'); remOut(it, true); count(); }
   actionProgress();
 }
@@ -1549,7 +1573,7 @@ function caption(t) { const c = $('cap'); if (!c) return; c.textContent = t; c.c
 function toast(msg, cls = '') { const t = $('toast'); t.innerHTML = msg; t.className = 'on ' + cls; clearTimeout(toast.t); toast.t = setTimeout(() => (t.className = ''), Math.min(5200, Math.max(2200, msg.length * 32))); }
 $('toast').onclick = () => { const t = $('toast'); if (t.classList.contains('full')) { t.className = ''; return; } t.classList.add('full'); clearTimeout(toast.t); toast.t = setTimeout(() => (t.className = ''), 7000); };
 function panel(title, text, body = '', acts = []) {
-  $('panel').classList.remove('hide'); $('panel').classList.toggle('min', !!save.pmin);
+  $('panel').classList.remove('hide'); $('panel').classList.toggle('min', !!save.pmin && !/^Bilan/.test(title)); $('panel').classList.toggle('bilan', /^Bilan/.test(title));
   $('ptitle').innerHTML = title; $('ptext').innerHTML = text; $('pbody').innerHTML = body;
   const pa = $('pact'); pa.innerHTML = '';
   for (const a of acts) { const b = document.createElement('button'); b.innerHTML = a[0]; if (a[2]) b.className = a[2]; b.onclick = a[1]; pa.appendChild(b); }
@@ -2089,7 +2113,7 @@ function pointLesson(k) {
   if (k === 'noeud') return knotLesson();
   const F = D.FICHES[k], ul = (a) => '<ul style="margin:4px 0;padding-left:20px">' + a.map((x) => `<li>${x}</li>`).join('') + '</ul>';
   return [
-    { t: D.POINTS[k] + ' : la fiche', x: `<div class="info">${D.POINT_INFO[k]}</div><div class="lab">✅ Quand le faire</div>${ul(F.quand)}<div class="lab">⛔ Quand l'éviter</div>${ul(F.non)}<div class="lab">➕ Avantages</div>${ul(F.plus)}<div class="lab">➖ Inconvénients</div>${ul(F.moins)}` },
+    { t: D.POINTS[k] + ' : la fiche', x: `<div class="info">${D.POINT_INFO[k]}</div><div class="lab">✅ Quand le faire</div>${ul(F.quand)}<div class="lab">⛔ Quand l'éviter</div>${ul(F.non)}<div class="lab">➕ Avantages</div>${ul(F.plus)}${F.geste ? '<div class="lab">✋ Le geste</div>' + ul(F.geste) : ''}<div class="lab">➖ Inconvénients</div>${ul(F.moins)}` },
     { t: 'Regardez', x: 'Le jeu fait le point devant vous avec <b>les mêmes gestes que vous</b> : passer l\'aiguille, tirer le fil, nouer, couper.', demo: 'point' },
     { t: 'À vous', x: '<b>① Glissez</b> pour passer l\'aiguille · <b>② touchez la pointe et tirez</b> le fil · <b>③ glissez par-dessus la plaie</b> pour nouer · <b>④ touchez les fils</b> pour couper. Les consignes s\'affichent en haut.', act: 'point' },
     { t: 'Vérifiez vos connaissances', x: '', quiz: D.LESSON_QUIZ[k] },
@@ -2147,12 +2171,12 @@ function bilan() {
     : [['Évaluation', sc.assess, 15], ['Conduite à tenir', sc.protocol, 30], ['Geste', sc.action ?? 100, 20], ['Pansement', sc.dress, 20], ['Orientation', sc.orient, 15]];
   let tot = 0, wsum = 0; parts.forEach(([, v, w]) => { tot += (v ?? 0) * w; wsum += w; });
   let total = Math.round(tot / wsum); if (S.errors.some((e) => e.includes('saignait'))) total -= 8;
-  if (S.critical.length && S.level === 'exam') total = Math.min(total, 49);
+  if (S.critical.length) total = Math.min(total, S.level === 'exam' ? 49 : 64); // une erreur critique = 1 étoile au plus, à tous les niveaux
   total = clamp(total, 0, 100);
   const st = total >= 85 ? 3 : total >= 65 ? 2 : total >= 40 ? 1 : 0;
   const key = S.mode + '_' + S.key; if (!S.sbq && !S.photo) save.best[key] = Math.max(save.best[key] || 0, st); save.pupu += S.pupu + st;
   let cert = '';
-  if (S.level === 'exam' && total >= 80 && !S.critical.length) { const d = new Date().toLocaleDateString('fr-FR'); save.certs.push({ n: S.data.name, d }); cert = `<div class="info">🎓 <b>Certificat local Nira Ora</b> — ${S.data.name}, ${d}. Bravo !</div>`; }
+  if (S.level === 'exam' && total >= 80 && !S.critical.length) { const d = new Date().toLocaleDateString('fr-FR'); save.certs.push({ n: S.data.name, d }); cert = `<div class="info">🎓 <b>Attestation d\'entraînement Nira Ora</b> (sans valeur de certification) — ${S.data.name}, ${d}. Bravo !</div>`; }
   persist();
   const best = parts.filter((p) => p[1] != null).sort((a, b) => b[1] - a[1])[0], low = parts.filter((p) => p[1] != null).sort((a, b) => a[1] - b[1])[0];
   const bars = parts.map(([n, v]) => `<div class="bar"><span>${n}</span><div><i style="width:${v ?? 0}%;background:${(v ?? 0) >= 80 ? '#4fc46a' : (v ?? 0) >= 55 ? '#f0b33a' : '#e0573a'}"></i></div></div>`).join('');
@@ -2163,8 +2187,8 @@ function bilan() {
   const xa = []; if (S.mode !== 'urg') xa.push(['🔮 Évolution prévue', () => showPredict(total)]);
   if (S.sbq && S.sbq.i + 1 < S.sbq.cfg.n) { const q = S.sbq; xa.unshift([`▶ Plaie suivante (${q.i + 2}/${q.cfg.n})`, () => startCustom(q.cfg, q.i + 1), 'main']); }
   S.showBilan = () => panel(`Bilan · ${total} %`, `<div class="stars">${stars(st)}</div>Maitaʻi ! Votre point fort : <b>${best[0]}</b>.${low[1] < 80 ? ` Un axe de progrès : <b>${low[0]}</b>.` : ''}`,
-    `${cert}${bars}${errs ? `<div class="lab">À retenir</div><ul class="info" style="padding-left:22px;margin:4px 0">${errs}</ul>` : ''}<div class="info">${learn}</div><div class="info">⏱ ${Math.floor(sec / 60)} min ${Math.round(sec % 60)} s · 🐚 +${S.pupu + st} coquillages</div>`,
-    [...xa, ['Recommencer', again, xa.length > 1 ? '' : 'main'], ['Revoir la plaie', () => { $('panel').classList.add('hide'); setView(new THREE.Vector3(0, 0, 0), 8, 0.6, 0); toast('Touchez « Accueil » en bas après avoir regardé.', ''); setTimeout(() => panel('Bilan', `${total} % · ${stars(st)}`, '', [['↩ Accueil', home, 'main'], ['Recommencer', again]]), 6000); }], ['↩ Accueil', home]]);
+    `${S.critical.length ? '<div class="info">⛔ <b>Erreur critique</b> : la note est limitée à 1 étoile.</div>' : ''}${cert}${bars}${errs ? `<div class="lab">À retenir</div><ul class="info" style="padding-left:22px;margin:4px 0">${errs}</ul>` : ''}<div class="info">${learn}</div><div class="info">⏱ ${Math.floor(sec / 60)} min ${Math.round(sec % 60)} s · 🐚 +${S.pupu + st} coquillages</div>`,
+    [...xa, ['Recommencer', again, xa.length > 1 ? '' : 'main'], ['Revoir la plaie', () => { setView(new THREE.Vector3(0, 0, 0), 8, 0.6, 0); panel('Bilan', `${total} % · ${stars(st)}`, '', [['↩ Accueil', home, 'main'], ['Recommencer', again]]); }], ['↩ Accueil', home]]);
   S.showBilan(); S.total = total;
   if (S.dressObj) { scene.remove(S.dressObj); S.dressObj = null; }
   $('pupu').textContent = '🐚 ' + save.pupu;
@@ -2302,7 +2326,7 @@ function sbForm(wg) { // v7.8 : menus déroulants, 2 colonnes, volets repliables
   wg.innerHTML = `<div class="sb" style="grid-column:1/3">
     <div class="sbcard"><div class="lab">La plaie</div>
       <button id="sbBody" class="sbzone">🧍 <span>Zone : <b>${D.SB.zones[c.zone][0]}</b>${c.mark ? ' 📍' : ''}</span><i>changer ›</i></button>
-      <div class="sbgrid">${sel('sbT', 'Type', Object.entries(D.SB.types), c.type)}${sel('sbS', 'Taille', [[2, '2 cm'], [4, '4 cm'], [7, '7 cm']], c.size)}${sel('sbN', 'Nombre de plaies', [[1, '1'], [2, '2'], [3, '3']], c.n)}${sel('sbB', 'Saignement', D.SB.bleeds.map((l, i) => [i, l]), c.bleed)}${sel('sbD', 'Délai', [[2, 'Moins de 6 h'], [12, '6 à 24 h'], [30, 'Plus de 24 h']], c.delay)}${sel('sbX', 'Patient', [['m', '👨 Homme'], ['f', '👩 Femme']], c.sex)}</div></div>
+      <div class="sbgrid">${sel('sbT', 'Type', Object.entries(D.SB.types), c.type)}${sel('sbS', 'Taille', [[2, '2 cm'], [4, '4 cm'], [7, '7 cm']], c.size)}${sel('sbN', 'Nombre de plaies', [[1, '1'], [2, '2'], [3, '3']], c.n)}${sel('sbB', 'Saignement', D.SB.bleeds.map((l, i) => [i, l]), c.bleed)}${sel('sbD', 'Délai', [[2, 'Moins de 6 h'], [8, '6 à 12 h'], [18, '12 à 24 h'], [30, 'Plus de 24 h']], c.delay)}${sel('sbX', 'Patient', [['m', '👨 Homme'], ['f', '👩 Femme']], c.sex)}</div></div>
     <div class="sbcard"><div class="lab">Le terrain</div>${fold('sbP', '👤 La personne', pers)}${fold('sbM', '💊 Ses médicaments', meds)}</div>
     <div class="info" style="font-size:13px">${D.SB.types[c.type]}, ${c.size} cm, ${D.SB.zones[c.zone][0].replace(/^\S+\s/, '').toLowerCase()}${c.n > 1 ? ' · ' + c.n + ' plaies' : ''}${chosen.length ? ' · ' + chosen.join(', ') : ''}</div>
     <button class="main" id="sbGo" style="width:100%;margin-top:6px">▶ Lancer le cas</button>
@@ -2320,11 +2344,11 @@ function sbData(cfg, type) {
   if (z === 'visage') Object.assign(w, { fil: { '6-0': 100, '5-0': 80, '4-0': 30, '3-0': 0 }, needle: { B: 100, A: 60, C: 50, D: 40, E: 20 }, abl: ['5 jours', ['5 jours', '10 jours', '14 jours']], close: { nonres: 100, colle: 80, strip: 70, res: 60, agrafe: 0 } });
   if (z === 'tete') Object.assign(w, { fil: { '3-0': 100, '4-0': 90, '5-0': 40, '6-0': 0 }, abl: ['8 jours', ['3 jours', '8 jours', '21 jours']] }), (w.close.agrafe = 100);
   if (z === 'main') Object.assign(w, { fil: { '5-0': 100, '4-0': 80, '6-0': 60, '3-0': 20 } });
-  if (z === 'jambe' || z === 'genou' || z === 'pied') Object.assign(w, { fil: { '4-0': 100, '3-0': 90, '5-0': 50, '6-0': 10 }, abl: ['14 jours', ['5 jours', '14 jours', '1 mois']] });
+  if (z === 'jambe' || z === 'genou' || z === 'pied') Object.assign(w, { fil: { '4-0': 100, '3-0': 90, '5-0': 50, '6-0': 10 }, abl: ['10 à 14 jours', ['5 jours', '10 à 14 jours', '1 mois']] });
   if (z === 'perinee') Object.assign(w, { fil: { '4-0': 100, '3-0': 80, '5-0': 50, '6-0': 0 }, close: { res: 100, nonres: 30, agrafe: 0, strip: 0, colle: 0 }, abl: ['résorbable : rien à retirer', ['résorbable : rien à retirer', '5 jours', '14 jours']] });
   const pat = Object.keys(cfg.pat).filter((k) => cfg.pat[k]).map((k) => D.RISKS[k].n.charAt(0).toLowerCase() + D.RISKS[k].n.slice(1));
   w.name = D.SB.types[type]; w.zone = lab; w.icon = '🧪'; w._base = base;
-  w.desc = `Cas créé : ${D.SB.types[type].toLowerCase()} de ${cfg.size} cm, ${lab.toLowerCase()}. Blessure il y a ${cfg.delay < 6 ? 'moins de 6 h' : cfg.delay < 24 ? '6 à 24 h' : 'plus de 24 h'}.${pat.length ? ' Personne : ' + pat.join(', ') + '.' : ' Adulte en bonne santé.'}${z === 'perinee' ? ' <b>Peau du périnée seulement</b> : fil résorbable. Déchirure profonde (muscle, sphincter) : sage-femme ou obstétricien, au bloc.' : ''}${z === 'main' ? ' Main : tester tendons et nerfs avant tout ; au moindre doute, chirurgien de la main.' : ''}`;
+  w.desc = `Cas créé : ${D.SB.types[type].toLowerCase()} de ${cfg.size} cm, ${lab.toLowerCase()}. Blessure il y a ${cfg.delay < 6 ? 'moins de 6 h' : cfg.delay < 12 ? '6 à 12 h' : cfg.delay < 24 ? '12 à 24 h' : 'plus de 24 h'}.${pat.length ? ' Personne : ' + pat.join(', ') + '.' : ' Adulte en bonne santé.'}${z === 'perinee' ? ' <b>Peau du périnée seulement</b> : fil résorbable. Déchirure profonde (muscle, sphincter) : sage-femme ou obstétricien, au bloc.' : ''}${z === 'main' ? ' Main : tester tendons et nerfs avant tout ; au moindre doute, chirurgien de la main.' : ''}`;
   return w;
 }
 async function startCustom(cfg, i) {
@@ -2351,7 +2375,7 @@ async function startCustom(cfg, i) {
 // Une seule photo ne donne pas la profondeur : la personne la choisit (peau, graisse, muscle).
 let PHOTO = null;
 function photoStart() {
-  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.setAttribute('capture', 'environment');
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; /* v7.27 : pas d'appareil photo direct (la photo irait dans la galerie) : on choisit une image existante */
   inp.onchange = () => { const f = inp.files && inp.files[0]; if (!f) return; const url = URL.createObjectURL(f), img = new Image();
     img.onload = () => { const k = Math.min(1, 1280 / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * k) + 8; c.height = Math.round(img.height * k) + 8;
       const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 4, 4, c.width - 8, c.height - 8); URL.revokeObjectURL(url);
@@ -2365,7 +2389,7 @@ function photoTrace() {
   ov.innerHTML = `<div class="phin"><b>📷 Tracez la plaie</b><small>Du doigt, d'un bout à l'autre de la plaie, en suivant la ligne.</small>
     <canvas id="phcv"></canvas>
     <div class="row sbrow" id="phD">${[['peau', 'Peau (derme)'], ['graisse', 'Jusqu\'à la graisse'], ['muscle', 'Jusqu\'au muscle']].map(([k, l]) => `<button data-k="${k}" class="${PHOTO.depth === k ? 'sel' : ''}">${l}</button>`).join('')}</div>
-    <label class="libre"><input type="checkbox" id="phOk" ${PHOTO.ok ? 'checked' : ''}> La personne est d'accord, son visage n'est pas sur la photo. La photo reste sur ce téléphone.</label>
+    <label class="libre"><input type="checkbox" id="phOk" ${PHOTO.ok ? 'checked' : ''}> Photo de la banque pédagogique, ou photo de patient avec son accord écrit ET l'autorisation de l'établissement. Pas de visage. L'app ne l'envoie nulle part, mais l'appareil photo peut la garder dans la galerie.</label>
     <div class="row"><button id="phGo" class="main">▶ Créer la plaie 3D</button><button id="phRe">↺ Retracer</button><button id="phX">✕</button></div></div>`;
   const cv = $('phcv'), src = PHOTO.cv, W0 = Math.min(innerWidth - 24, 520), sc = W0 / src.width; cv.width = W0; cv.height = Math.round(src.height * sc);
   const g = cv.getContext('2d'); const draw = () => { g.drawImage(src, 0, 0, cv.width, cv.height); if (PHOTO.pts.length > 1) { g.strokeStyle = '#3cf0a0'; g.lineWidth = 4; g.lineCap = 'round'; g.beginPath(); PHOTO.pts.forEach(([x, y], i) => (i ? g.lineTo : g.moveTo).call(g, x * sc, y * sc)); g.stroke(); } };
@@ -2478,6 +2502,6 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
-window.__nira = { dressing, careDress, N, animN, animH, ptAt, demoSeq, autoStitch, passDown, passUp, pullDown, pullMove, pullUp, throwDown, throwMove, throwUp, cutTap, knotStart, scr: (v) => toScreen(v), scene, camera, cam, get S() { return S; }, start, onTap, setView, pick, padGroup, get pad() { return pad; }, nearest, gAt, W, renderer, home, startCustom, photoSkin, startPhoto, setPhoto: (cv, pts, depth) => (PHOTO = { cv, pts, depth, ok: true }), showPredict, sbForm, get sbCfg() { return sbCfg; } };
+window.__nira = { buildStitch, startLesson, dressing, careDress, N, animN, animH, ptAt, demoSeq, autoStitch, passDown, passUp, pullDown, pullMove, pullUp, throwDown, throwMove, throwUp, cutTap, knotStart, scr: (v) => toScreen(v), scene, camera, cam, get S() { return S; }, start, onTap, setView, pick, padGroup, get pad() { return pad; }, nearest, gAt, W, renderer, home, startCustom, photoSkin, startPhoto, setPhoto: (cv, pts, depth) => (PHOTO = { cv, pts, depth, ok: true }), showPredict, sbForm, get sbCfg() { return sbCfg; } };
 boot().catch((e) => { $('loading').textContent = 'Erreur de chargement : ' + e.message; console.error(e); });
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});

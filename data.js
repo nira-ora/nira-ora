@@ -81,7 +81,7 @@ export const SUTURE = {
   },
   deep: {
     name: 'Plaie profonde', zone: 'Mollet', icon: '🕳️', deep: true,
-    desc: 'Coupure par une tôle il y a 2 h. Plaie de 5 cm, profonde : la graisse est ouverte jusqu\'à l\'aponévrose (nappe blanche), le muscle se voit au fond. Pas de tendon ni de nerf atteint. On ferme plan par plan : d\'abord le plan profond, puis la peau.',
+    desc: 'Coupure par une tôle il y a 2 h. Plaie de 5 cm, profonde : la graisse est ouverte jusqu\'à l\'aponévrose (nappe blanche), qui est intacte. Pas de tendon ni de nerf atteint. On ferme plan par plan : d\'abord le plan profond, puis la peau.',
     bite: [0.4, 0.7], spacing: [0.6, 1.0], fil: { '4-0': 100, '3-0': 90, '5-0': 50, '6-0': 10 },
     needle: { A: 100, D: 70, C: 60, B: 40, E: 20 }, point: { simple: 100, horiz: 80, donati: 80, surjet: 60, x: 50, intra: 40 }, tension: false,
     close: { nonres: 100, agrafe: 70, res: 50, strip: 0, colle: 0 },
@@ -89,7 +89,7 @@ export const SUTURE = {
   },
   vaisseau: {
     name: 'Plaie profonde qui saigne', zone: 'Avant-bras', icon: '🩸', pad: 'deep', deep: true, vessel: 0.42,
-    desc: 'Coupure par une vitre il y a 30 min. Plaie profonde de 5 cm. Malgré la compression, du sang continue de sourdre du fond : un petit vaisseau saigne. Pas de jet, pas de pâleur, mobilité et sensibilité normales.',
+    desc: 'Geste médical, à découvrir en démonstration. Coupure par une vitre il y a 30 min. Plaie profonde de 5 cm. Malgré la compression, du sang continue de sourdre du fond : un petit vaisseau saigne. Pas de jet, pas de pâleur, mobilité et sensibilité normales.',
     bite: [0.4, 0.7], spacing: [0.6, 1.0], fil: { '4-0': 100, '3-0': 90, '5-0': 50, '6-0': 10 },
     needle: { A: 100, D: 70, C: 60, B: 40, E: 20 }, point: { simple: 100, horiz: 80, donati: 80, surjet: 60, x: 50, intra: 40 }, tension: false,
     close: { nonres: 100, agrafe: 70, res: 50, strip: 0, colle: 0 },
@@ -134,9 +134,11 @@ export const SUTURE_DRESS = { best: ['ilot'], ok: ['compresse', 'film'], fair: [
 export function suturePrep(bleeding, level) {
   const it = [{ id: 'consent', label: 'Expliquer le soin, recueillir l\'accord de la personne', kind: 'plain', msg: 'La personne sait ce qu\'on va faire et elle est d\'accord : c\'est obligatoire avant le geste.' },
     { id: 'tetanos', label: 'Demander la vaccination antitétanique', kind: 'plain', msg: 'Rappel à jour ? Si non à jour ou inconnu : vaccin ± immunoglobulines selon la plaie, sur avis médical.' },
-    { id: 'hands', label: 'Hygiène des mains, gants stériles (asepsie)', kind: 'plain', msg: 'Friction hydro-alcoolique puis gants stériles : on ne touche plus rien de non stérile.' }];
+    { id: 'inst', label: 'Installer : personne allongée, plaie bien éclairée, à hauteur des coudes', kind: 'plain', msg: 'La personne allongée, vous assis, la plaie éclairée, le matériel à portée de main : on est précis et on ne se fatigue pas.' },
+    { id: 'hands', label: 'Hygiène des mains, masque, gants stériles (asepsie)', kind: 'plain', msg: 'Masque, friction hydro-alcoolique puis gants stériles : on ne touche plus rien de non stérile.' }];
   if (bleeding) it.push({ id: 'compress', label: 'Comprimer pour arrêter le saignement', kind: 'hold' });
   it.push({ id: 'explore', label: 'Examiner : sensibilité, mobilité, tendons, corps étranger', kind: 'look', msg: 'Pas de tendon ni de nerf atteint, pas de corps étranger. Suture possible.' });
+  it.push({ id: 'skin', label: 'Antiseptique sur la peau autour de la plaie, avant de piquer', kind: 'plain', msg: 'On ne pique jamais à travers une peau non désinfectée.' });
   it.push({ id: 'anesth', label: 'Anesthésie locale', kind: 'anesth' });
   it.push({ id: 'wash', label: 'Laver et irriguer au sérum physiologique', kind: 'wash' });
   it.push({ id: 'antis', label: 'Antiseptique adapté à la peau lésée', kind: 'product', ok: ['povidone_aq', 'chlorhex_aq', 'chlore'], fair: ['serum', 'eau'] });
@@ -162,7 +164,7 @@ export const CARE = {
       { id: 'rin', label: 'Rincer au sérum physiologique', kind: 'wash' },
       { id: 'ant', label: 'Antiseptique pour peau lésée', kind: 'product', ok: ['chlore', 'povidone_aq', 'chlorhex_aq'], fair: ['serum', 'eau'] },
       { id: 'pan', label: 'Pansement non occlusif, revoir chaque jour', kind: 'plain' },
-      { id: 'tet', label: 'Vérifier le vaccin antitétanique (plaie souillée = risque important)', kind: 'plain', msg: 'Dernier rappel il y a plus de 10 ans : non à jour. Plaie souillée → immunoglobulines + vaccin.' },
+      { id: 'tet', label: 'Vérifier le vaccin antitétanique (plaie souillée = risque important)', kind: 'plain', msg: 'Rappel non à jour selon le calendrier vaccinal (25, 45, 65 ans puis tous les 10 ans) : plaie souillée → vaccin + immunoglobulines humaines 250 UI, sur prescription.' },
     ],
     bad: [
       { id: 'x_sut', label: 'Suturer pour fermer vite', bad: 'Plaie souillée : pas de suture immédiate (suture différée sur avis médical).', critical: true },
@@ -218,7 +220,7 @@ export const CARE = {
     assess: ['Quelle est la profondeur ?', ['2e degré superficiel : phlyctènes, fond rouge, douleur', '1er degré : simple rougeur', '3e degré : cartonné, insensible'], 0],
     steps: [
       { id: 'cool', label: 'Refroidir : eau à 15 °C, 15 min, à 15 cm (si moins d\'1 h)', kind: 'hold', dur: 4, msg: 'Refroidissement fait : la douleur diminue.' },
-      { id: 'bij', label: 'Retirer bagues, montre et vêtements non collés', kind: 'plain' },
+      { id: 'bij', label: 'Retirer bagues, montre et vêtements non collés, pendant le refroidissement (avant que ça gonfle)', kind: 'plain' },
       { id: 'dol', label: 'Antalgique', kind: 'plain' },
       { id: 'phl', label: 'Exciser le toit des phlyctènes rompues', kind: 'action', action: 'blisters' },
       { id: 'ant', label: 'Antiseptique adapté aux brûlures', kind: 'product', ok: ['chlore', 'chlorhex_aq'], fair: ['serum', 'eau'] },
@@ -241,7 +243,7 @@ export const CARE = {
       { id: 'net', label: 'Nettoyer au sérum physiologique ou à l\'eau', kind: 'product', ok: ['serum', 'eau'], fair: [] },
       { id: 'sec', label: 'Sécher et protéger la peau autour (produit barrière)', kind: 'plain', msg: 'Peau périlésionnelle protégée : la macération va diminuer.' },
       { id: 'pan', label: 'Pansement très absorbant', kind: 'plain' },
-      { id: 'cmp', label: 'Compression veineuse si prescrite (avis médical)', kind: 'plain' },
+      { id: 'cmp', label: 'Compression veineuse si prescrite, après mesure de l\'IPS (dangereuse si les artères sont bouchées)', kind: 'plain' },
     ],
     bad: [
       { id: 'x_ant', label: 'Antiseptique à chaque soin', bad: 'Plaie chronique : pas d\'antiseptique systématique, il retarde la cicatrisation.' },
@@ -316,7 +318,7 @@ export const CARE = {
       { id: 'ane', label: 'Anesthésie locale (lidocaïne 1 % sans adrénaline) après la chaleur', kind: 'plain' },
       { id: 'exp', label: 'Explorer : épine ou corps étranger', kind: 'look', msg: 'Pas d\'épine restée dans la plaie.' },
       { id: 'des', label: 'Désinfecter', kind: 'product', ok: ['chlore'], fair: ['povidone_aq', 'chlorhex_aq'] },
-      { id: 'tet', label: 'Tétanos : sérum + vaccin si non à jour', kind: 'plain' },
+      { id: 'tet', label: 'Tétanos : vaccin + immunoglobulines si non à jour', kind: 'plain' },
       { id: 'sur', label: 'Surveiller les signes généraux, appeler le 15 si besoin', kind: 'plain' },
     ],
     bad: [
@@ -414,7 +416,7 @@ Object.assign(CARE, {
     steps: [
       { id: 'look', label: 'Regarder la cicatrice : fermée, sèche, pas de signe d\'infection', kind: 'look', msg: 'Cicatrice fermée, berges collées : on peut retirer les fils.' },
       { id: 'ant', label: 'Antiseptique, de la cicatrice vers l\'extérieur, laisser sécher', kind: 'product', ok: ['chlorhex_aq', 'povidone_aq', 'chlore'], fair: ['serum', 'eau'] },
-      { id: 'rem', label: 'Retirer chaque point : saisir le nœud, couper sous le nœud au ras de la peau, tirer', kind: 'action', action: 'remove' },
+      { id: 'rem', label: 'Retirer chaque point : saisir le nœud, couper sous le nœud au ras de la peau, tirer vers la cicatrice', kind: 'action', action: 'remove' },
       { id: 'cpt', label: 'Compter les fils retirés, vérifier qu\'ils sont complets', kind: 'plain', msg: '5 fils complets : aucun oubli.' },
       { id: 'str', label: 'Strips si la cicatrice paraît fragile', kind: 'plain' },
     ],
@@ -428,7 +430,7 @@ Object.assign(CARE, {
   ablation_inf: {
     name: 'Point infecté', zone: 'Jambe', icon: '🔴', pad: 'lin', removal: { type: 'fil', n: 5, day: 5, infect: 2 },
     desc: 'J5 après une suture de jambe. Douleur, rougeur chaude autour du point du milieu, une goutte de pus sort à côté du fil. Pas de fièvre.',
-    assess: ['Que faire du point infecté ?', ['Retirer le point (et ses voisins si besoin) pour laisser s\'écouler, avis médical', 'Rajouter un pansement occlusif', 'Laisser les points 10 jours'], 0],
+    assess: ['Que faire du point infecté ?', ['Retirer le point infecté pour laisser s\'écouler, avis médical', 'Rajouter un pansement occlusif', 'Laisser les points 10 jours'], 0],
     steps: [
       { id: 'look', label: 'Délimiter la rougeur, prendre la température', kind: 'look', msg: 'Rougeur limitée autour du point du milieu, pas de fièvre.' },
       { id: 'ant', label: 'Antiseptique sur la cicatrice', kind: 'product', ok: ['chlorhex_aq', 'povidone_aq', 'chlore'], fair: ['serum'] },
@@ -449,7 +451,7 @@ Object.assign(CARE, {
     assess: ['Avec quoi retire-t-on des agrafes ?', ['Une pince ôte-agrafes, glissée sous l\'agrafe', 'Des ciseaux', 'Une pince à épiler, en tirant'], 0],
     steps: [
       { id: 'ant', label: 'Antiseptique, laisser sécher', kind: 'product', ok: ['chlorhex_aq', 'povidone_aq', 'chlore'], fair: ['serum', 'eau'] },
-      { id: 'rem', label: 'Glisser l\'ôte-agrafes sous chaque agrafe et serrer : elle s\'ouvre et sort', kind: 'action', action: 'remove' },
+      { id: 'rem', label: 'Glisser les 2 mors de l\'ôte-agrafes sous l\'agrafe, serrer à fond, puis soulever', kind: 'action', action: 'remove' },
       { id: 'cpt', label: 'Compter les agrafes retirées', kind: 'plain', msg: '6 agrafes : aucune oubliée.' },
     ],
     bad: [{ id: 'x_tire', label: 'Tirer l\'agrafe vers le haut sans l\'ouvrir', bad: 'L\'agrafe s\'ouvre avec l\'ôte-agrafes ; tirée fermée, elle arrache la peau.' }],
@@ -527,12 +529,12 @@ export const URGENCE = {
   },
 };
 export const TIPS = {
-  prep: 'L\'ordre : asepsie (mains, gants) → examen → anesthésie → lavage → antiseptique → séchage → champ stérile.',
+  prep: 'L\'ordre : accord → mains, masque, gants → examen → antiseptique sur la peau → anesthésie → lavage → antiseptique → séchage → champ stérile.',
   choose: 'Peau des membres : fil non résorbable 4-0 et aiguille 3/8 tranchante inversée. Visage : 6-0 ou colle. Cuir chevelu : agrafes. Forte tension : point de Donati.',
-  suture: 'Même distance des deux côtés, perpendiculaire à la plaie. Un point tous les 5 à 10 mm (1 à 2 fois la prise). Commencez au milieu, puis coupez chaque espace en deux. Nœud : 3 à 4 jetés, sur le côté, jamais sur la plaie.',
-  staple: 'Agrafes : une agrafe à cheval sur la plaie, tous les 5 à 10 mm, berges bien éversées.',
+  suture: 'Même distance des deux côtés, perpendiculaire à la plaie. Un point tous les 5 à 10 mm (1 à 2 fois la prise). Commencez au milieu, puis coupez chaque espace en deux. Nœud : 4 à 5 jetés pour un fil monofilament (nylon), sur le côté, jamais sur la plaie. Saisir l\'aiguille aux 2/3 de sa longueur depuis la pointe, piquer à 90° et suivre sa courbe d\'un mouvement du poignet ; la pince à griffes soulève la berge sans l\'écraser.',
+  staple: 'Agrafes : la pince à griffes éverse les berges ; agrafeuse perpendiculaire, centrée sur la plaie, posée sans appuyer fort ; une agrafe tous les 5 à 10 mm. Retrait : mors entièrement sous l\'agrafe, serrer à fond avant de soulever.',
   strip: 'Strips : peau bien sèche, de part et d\'autre, perpendiculaires, espacés de 3 à 5 mm.',
-  glue: 'Colle : berges rapprochées d\'abord, 2-3 couches fines sur toute la longueur, jamais dans la plaie.',
+  glue: 'Colle : petite plaie superficielle, sans tension, bien sèche. Rapprocher les berges et les tenir jusqu\'à ce que la colle sèche ; 2-3 couches fines en surface, jamais dans la plaie ; pas de pommade dessus, elle tombe seule en 5 à 10 jours.',
   dress: 'Plaie suturée sèche → pansement sec stérile. Plaie qui suinte → absorbant. Plaie infectée → jamais d\'occlusif.',
   care: 'Regardez la couleur dominante : noir = nécrose, jaune = fibrine, rouge = bourgeon, rose = épiderme.',
   urg: 'Hémorragie : se protéger → comprimer fort → alerter → allonger. Garrot seulement si la compression échoue.',
@@ -547,12 +549,14 @@ export const FICHES = {
     quand: ['La plupart des plaies : bords nets, peu de tension', 'Plaie irrégulière : chaque point s\'ajuste', 'Plaie à risque d\'infection : on peut retirer un seul point'],
     non: ['Forte tension (préférer un matelassier)', 'Zone très esthétique si un fil fin intradermique est possible'],
     plus: ['Polyvalent, le « point de base »', 'Si un point lâche, les autres tiennent'],
+    geste: ['Aiguille tenue aux 2/3 depuis la pointe', 'Piquer à 90° de la peau, suivre la courbe de l\'aiguille', 'Pince à griffes : soulever la berge, ne pas l\'écraser', 'Nœud au porte-aiguille, posé sur le côté'],
     moins: ['Plus long qu\'un surjet', 'Marques en échelle si les fils restent trop longtemps'],
   },
   donati: {
     quand: ['Tension modérée', 'Berges qui ont tendance à rentrer (s\'invaginer) : il les éverse', 'Peau lâche ou plis (dos, coude)'],
     non: ['Visage, paume de la main, plante du pied', 'Tension forte : il faut d\'abord des points profonds (fermeture en plusieurs plans, par un chirurgien)'],
     plus: ['Éversion très efficace', 'Tient la tension grâce à la prise large'],
+    geste: ['Loin-loin : passage large et profond, à 4–8 mm des berges', 'Retour près-près sur la même ligne, superficiel (1–2 mm), dans le derme', 'Nœud posé sur le côté, berges bien éversées', 'Variante Blair-Donati (semi-enfoui) : d\'un côté le retour reste dans le derme, pas de trace de fil de ce côté'],
     moins: ['Plus long à faire', 'Marques plus visibles ; risque d\'étrangler la peau si trop serré'],
   },
   horiz: {
@@ -571,12 +575,14 @@ export const FICHES = {
     quand: ['Plaie longue et droite, peu de tension', 'Cuir chevelu (hémostatique)', 'Quand il faut aller vite'],
     non: ['Plaie souillée ou à risque d\'infection', 'Plaie très irrégulière ou sous tension'],
     plus: ['Rapide, étanche', 'Répartit la tension le long de la plaie'],
+    geste: ['Commencer par un point simple noué à un bout, sans couper le brin long', 'Chaque passage perpendiculaire à la plaie : le fil croise en diagonale dessus', 'Espacement régulier (≈ 5 mm), fil gardé tendu entre les passages', 'Finir : laisser la dernière boucle lâche et la nouer avec le brin libre'],
     moins: ['Si le fil casse, tout lâche', 'Réglage point par point impossible'],
   },
   intra: {
     quand: ['Zone esthétique (visage), plaie nette', 'Peu de tension', 'Fil résorbable possible : pas d\'ablation'],
     non: ['Plaie souillée, contuse ou infectée', 'Tension, plaie profonde non fermée en dessous'],
     plus: ['Pas de marques de fils sur la peau', 'Très belle cicatrice'],
+    geste: ['Ancrer le départ (nœud enfoui ou bout laissé dehors et fixé)', 'Petites prises horizontales dans le derme, alternées d\'un côté puis de l\'autre', 'Chaque entrée juste en face, ou un peu en arrière, de la sortie précédente', 'Tirer doucement : la plaie se ferme comme une fermeture éclair, puis ancrer la fin'],
     moins: ['Technique difficile, plus longue', 'Peu solide seul si la peau tire'],
   },
 };
@@ -604,11 +610,12 @@ export const LESSON_QUIZ = {
 };
 export const ANESTH_LESSON = [
   { t: 'Avant de piquer', x: 'Demandez : <b>allergie</b> aux anesthésiques locaux ? <b>Poids</b> du patient ? Grossesse, maladie du cœur, du foie ? Examinez aussi la <b>sensibilité</b> et la <b>mobilité</b> AVANT d\'endormir.' },
-  { t: 'Calculer la dose maximale', x: 'Lidocaïne 1 % = <b>10 mg par mL</b>. Sans adrénaline : <b>5 mg/kg</b> au maximum.', quiz: ['Patient de 60 kg : volume maximal de lidocaïne 1 % sans adrénaline ?', ['30 mL', '60 mL', '5 mL'], 0] },
+  { t: 'Calculer la dose maximale', x: 'Lidocaïne 1 % = <b>10 mg par mL</b>. Sans adrénaline : <b>5 mg/kg</b>, et <b>jamais plus de 200 mg</b> chez l\'adulte en infiltration (notice française), soit 20 mL à 1 %. Réduire chez la personne âgée, en cas de maladie du cœur ou du foie.', quiz: ['Patient de 60 kg : volume maximal de lidocaïne 1 % sans adrénaline ?', ['20 mL (5 mg/kg = 300 mg, mais plafond de 200 mg)', '30 mL', '60 mL'], 0] },
+
   { t: 'Le matériel', x: 'Seringue de 5 à 10 mL, <b>aiguille fine</b> (25 à 27 G), <b>lidocaïne 1 % sans adrénaline</b>. Une aiguille fine et un liquide à température ambiante font moins mal.', show: 'syringe' },
   { t: 'Asepsie et prévenir', x: 'Mains, gants, antiseptique sur la peau. Prévenez : « ça pique un peu, puis ça brûle quelques secondes ». Gardez le <b>contact verbal</b> pendant l\'injection.' },
   { t: 'Regardez la première injection', x: 'On pique <b>dans la berge de la plaie</b> (pas à travers la peau saine), sous le derme. On <b>aspire</b> (pas de sang), puis on injecte <b>lentement</b>.', demo: 'inject' },
-  { t: 'À vous', x: 'Touchez <b>4 points</b> le long des berges. Repiquez dans la zone déjà endormie, de proche en proche.', act: 'inject' },
+  { t: 'À vous', x: 'Touchez <b>4 points</b> le long des berges. Repiquez dans la zone déjà endormie, de proche en proche : moins de piqûres = moins de douleur. Plaie longue : par segments, sans oublier <b>les deux bouts</b> de la plaie.', act: 'inject' },
   { t: 'Attendre', x: 'Attendez <b>au moins 2 minutes</b> que le produit agisse.', act: 'wait' },
   { t: 'Tester', x: 'Touchez la peau près de la plaie pour vérifier qu\'elle est bien endormie avant de suturer.', act: 'test' },
   { t: 'Surveiller', x: 'Signes de surdosage (souvent dans les 1–5 min) : <b>engourdissement autour de la bouche, goût métallique, acouphènes</b>, vertiges, somnolence. → On arrête, on reste avec le patient, on appelle le médecin.', quiz: ['Le patient dit avoir un goût de métal dans la bouche. Que faire ?', ['Arrêter l\'injection et appeler le médecin', 'Continuer plus vite', 'Lui donner à boire'], 0] },
@@ -655,7 +662,7 @@ export const SB = {
 
 // ---------------------------------------------------------------- VERSION DE DÉMONSTRATION (GitHub)
 // DEMO = true dans la copie publiée sur GitHub (script blender/../make_demo.py) : contenu limité.
-export const DEMO = true;
+export const DEMO = false;
 export const ATELIER = false; // true dans la copie « Atelier nœud » (make_atelier.py)
 export const DEMO_KEEP = { suture: ['lin', 'deep'], care: ['ablation', 'corail', 'morsure'], urg: ['hemo', 'requin'], learn: ['couches', 'atelier', 'noeud', 'anesth', 'simple', 'donati'], levels: ['deb', 'int'] };
 
